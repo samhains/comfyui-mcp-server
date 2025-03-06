@@ -6,28 +6,57 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("ComfyUIClient")
 
-DYNAMIC_MAPPING = {
-    "prompt": (6, "text"),
-    "width": (5, "width"),
-    "height": (5, "height")
+DEFAULT_MAPPING = {
+    "prompt": ("6", "text"),
+    "width": ("5", "width"),
+    "height": ("5", "height"),
+    "model": ("4", "ckpt_name")
 }
 
 class ComfyUIClient:
     def __init__(self, base_url):
         self.base_url = base_url
+        self.available_models = self._get_available_models()
 
-    def generate_image(self, prompt, width, height):
+    def _get_available_models(self):
+        """Fetch list of available checkpoint models from ComfyUI"""
         try:
-            with open("workflows/basic_api_test.json", "r") as f:
+            response = requests.get(f"{self.base_url}/object_info/CheckpointLoaderSimple")
+            if response.status_code != 200:
+                logger.warning("Failed to fetch model list; using default handling")
+                return []
+            data = response.json()
+            models = data["CheckpointLoaderSimple"]["input"]["required"]["ckpt_name"][0]
+            logger.info(f"Available models: {models}")
+            return models
+        except Exception as e:
+            logger.warning(f"Error fetching models: {e}")
+            return []
+
+    def generate_image(self, prompt, width, height, workflow_id="basic_api_test", model=None):
+        try:
+            workflow_file = f"workflows/{workflow_id}.json"
+            with open(workflow_file, "r") as f:
                 workflow = json.load(f)
 
-            for param_key, (node_id, input_key) in DYNAMIC_MAPPING.items():
-                value = locals()[param_key]
-                if str(node_id) not in workflow:
-                    raise Exception(f"Node {node_id} not found in workflow")
-                workflow[str(node_id)]["inputs"][input_key] = value
+            params = {"prompt": prompt, "width": width, "height": height}
+            if model:
+                # Validate or correct model name
+                if model.endswith("'"):  # Strip accidental quote
+                    model = model.rstrip("'")
+                    logger.info(f"Corrected model name: {model}")
+                if self.available_models and model not in self.available_models:
+                    raise Exception(f"Model '{model}' not in available models: {self.available_models}")
+                params["model"] = model
 
-            logger.info("Submitting workflow to ComfyUI...")
+            for param_key, value in params.items():
+                if param_key in DEFAULT_MAPPING:
+                    node_id, input_key = DEFAULT_MAPPING[param_key]
+                    if node_id not in workflow:
+                        raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
+                    workflow[node_id]["inputs"][input_key] = value
+
+            logger.info(f"Submitting workflow {workflow_id} to ComfyUI...")
             response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
             if response.status_code != 200:
                 raise Exception(f"Failed to queue workflow: {response.status_code} - {response.text}")
@@ -41,10 +70,10 @@ class ComfyUIClient:
                 if history.get(prompt_id):
                     outputs = history[prompt_id]["outputs"]
                     logger.info("Workflow outputs: %s", json.dumps(outputs, indent=2))
-                    if "9" not in outputs or "images" not in outputs["9"]:
-                        raise Exception(f"Output node '9' missing or has no images: {outputs}")
-                    image_filename = outputs["9"]["images"][0]["filename"]
-                    # Use /view endpoint for ComfyUI image access
+                    image_node = next((nid for nid, out in outputs.items() if "images" in out), None)
+                    if not image_node:
+                        raise Exception(f"No output node with images found: {outputs}")
+                    image_filename = outputs[image_node]["images"][0]["filename"]
                     image_url = f"{self.base_url}/view?filename={image_filename}&subfolder=&type=output"
                     logger.info(f"Generated image URL: {image_url}")
                     return image_url
@@ -52,7 +81,7 @@ class ComfyUIClient:
             raise Exception(f"Workflow {prompt_id} didn’t complete within {max_attempts} seconds")
 
         except FileNotFoundError:
-            raise Exception("Workflow file 'workflows/basic_api_test.json' not found")
+            raise Exception(f"Workflow file '{workflow_file}' not found")
         except KeyError as e:
             raise Exception(f"Workflow error - invalid node or input: {e}")
         except requests.RequestException as e:

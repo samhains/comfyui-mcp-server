@@ -4,7 +4,13 @@ import json
 
 payload = {
     "tool": "generate_image",
-    "params": json.dumps({"prompt": "a dog wearing sunglasses", "width": 512, "height": 512})
+    "params": json.dumps({
+        "prompt": "an english mastiff dog sitting on a large boulder, bright shiny day",
+        "width": 512,
+        "height": 512,
+        "workflow_id": "basic_api_test",
+        "model": "v1-5-pruned-emaonly.ckpt"  # No extra quote
+    })
 }
 
 async def test_mcp_server():
