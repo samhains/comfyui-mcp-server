@@ -6,7 +6,7 @@ import argparse
 payload = {
     "tool": "generate_image",
     "params": json.dumps({
-        "prompt": "an oddly satisfying jelly castle",
+        "prompt": "an oddly satisfying jelly castle scissors and tactile",
         "width": 1024,
         "height": 1024,
         "workflow_id": "flux-dev-workflow",

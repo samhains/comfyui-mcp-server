@@ -11,8 +11,8 @@ from comfyui_client import ComfyUIClient
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("MCP_Server")
 
-# Global ComfyUI client (fallback since context isn’t available)
-comfyui_client = ComfyUIClient("http://localhost:8188")
+# Global ComfyUI client (fallback since context isn't available)
+comfyui_client = ComfyUIClient("http://100.75.77.33:8188")
 
 # Define application context (for future use)
 class AppContext:
