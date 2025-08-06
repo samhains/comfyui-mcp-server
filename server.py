@@ -3,7 +3,9 @@ import json
 import logging
 from typing import AsyncIterator
 from contextlib import asynccontextmanager
-import websockets
+from fastapi import FastAPI, Response
+from fastapi.responses import StreamingResponse
+import uvicorn
 from mcp.server.fastmcp import FastMCP
 from comfyui_client import ComfyUIClient
 
@@ -62,26 +64,63 @@ def generate_image(params: str) -> dict:
         logger.error(f"Error: {e}")
         return {"error": str(e)}
 
-# WebSocket server
-async def handle_websocket(websocket):
-    logger.info("WebSocket client connected")
-    try:
-        async for message in websocket:
-            request = json.loads(message)
-            logger.info(f"Received message: {request}")
-            if request.get("tool") == "generate_image":
-                result = generate_image(request.get("params", ""))
-                await websocket.send(json.dumps(result))
-            else:
-                await websocket.send(json.dumps({"error": "Unknown tool"}))
-    except websockets.ConnectionClosed:
-        logger.info("WebSocket client disconnected")
+# Create FastAPI app for HTTP endpoints
+app = FastAPI(title="ComfyUI MCP Server")
 
-# Main server loop
-async def main():
-    logger.info("Starting MCP server on ws://0.0.0.0:9000...")
-    async with websockets.serve(handle_websocket, "0.0.0.0", 9000):
-        await asyncio.Future()  # Run forever
+@app.post("/generate_image")
+async def generate_image_http(params: dict):
+    """HTTP endpoint for image generation"""
+    logger.info(f"Received HTTP request with params: {params}")
+    try:
+        result = generate_image(json.dumps(params))
+        return result
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
+@app.post("/generate_image_stream")
+async def generate_image_stream(params: dict):
+    """SSE endpoint for streaming image generation progress"""
+    logger.info(f"Received SSE request with params: {params}")
+    
+    async def event_stream():
+        try:
+            # Send initial status
+            yield f"data: {json.dumps({'status': 'starting', 'message': 'Initializing image generation...'})}\n\n"
+            
+            # Generate image (this will still use polling internally)
+            result = generate_image(json.dumps(params))
+            
+            # Send progress updates (can be enhanced to show actual ComfyUI progress)
+            yield f"data: {json.dumps({'status': 'processing', 'message': 'Generating image...'})}\n\n"
+            
+            # Send final result
+            yield f"data: {json.dumps({'status': 'complete', 'result': result})}\n\n"
+            
+        except Exception as e:
+            logger.error(f"Error in stream: {e}")
+            yield f"data: {json.dumps({'status': 'error', 'error': str(e)})}\n\n"
+    
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+        }
+    )
+
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "ComfyUI MCP Server"}
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    import sys
+    if "--http" in sys.argv:
+        logger.info("Starting HTTP MCP server on http://0.0.0.0:9000...")
+        uvicorn.run(app, host="0.0.0.0", port=9000)
+    else:
+        logger.info("Starting MCP server...")
+        mcp.run()
