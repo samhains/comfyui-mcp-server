@@ -1,6 +1,7 @@
 import asyncio
 import websockets
 import json
+import argparse
 
 payload = {
     "tool": "generate_image",
@@ -13,8 +14,8 @@ payload = {
     })
 }
 
-async def test_mcp_server():
-    uri = "ws://localhost:9000"
+async def test_mcp_server(host="localhost"):
+    uri = f"ws://{host}:9000"
     try:
         async with websockets.connect(uri) as ws:
             print("Connected to MCP server")
@@ -26,5 +27,16 @@ async def test_mcp_server():
         print(f"WebSocket error: {e}")
 
 if __name__ == "__main__":
-    print("Testing MCP server with WebSocket...")
-    asyncio.run(test_mcp_server())
+    parser = argparse.ArgumentParser(description="Test MCP server with WebSocket")
+    parser.add_argument("--tailscale", action="store_true", help="Use Tailscale address (100.75.77.33)")
+    parser.add_argument("--host", type=str, help="Custom host address")
+    args = parser.parse_args()
+    
+    host = "localhost"
+    if args.tailscale:
+        host = "100.75.77.33"
+    elif args.host:
+        host = args.host
+    
+    print(f"Testing MCP server with WebSocket at {host}:9000...")
+    asyncio.run(test_mcp_server(host))
