@@ -79,8 +79,8 @@ async def handle_websocket(websocket):
 
 # Main server loop
 async def main():
-    logger.info("Starting MCP server on ws://localhost:9000...")
-    async with websockets.serve(handle_websocket, "localhost", 9000):
+    logger.info("Starting MCP server on ws://0.0.0.0:9000...")
+    async with websockets.serve(handle_websocket, "0.0.0.0", 9000):
         await asyncio.Future()  # Run forever
 
 if __name__ == "__main__":
