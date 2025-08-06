@@ -6,12 +6,22 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("ComfyUIClient")
 
-DEFAULT_MAPPING = {
-    "prompt": ("6", "text"),
-    "width": ("5", "width"),
-    "height": ("5", "height"),
-    "model": ("4", "ckpt_name")
+WORKFLOW_MAPPINGS = {
+    "basic_api_test": {
+        "prompt": ("6", "text"),
+        "width": ("5", "width"),
+        "height": ("5", "height"),
+        "model": ("4", "ckpt_name")
+    },
+    "flux-dev-workflow": {
+        "prompt": ("6", "text"),
+        "width": ("27", "width"),
+        "height": ("27", "height"),
+        "model": ("30", "ckpt_name")
+    }
 }
+
+DEFAULT_MAPPING = WORKFLOW_MAPPINGS["basic_api_test"]
 
 class ComfyUIClient:
     def __init__(self, base_url):
@@ -39,6 +49,10 @@ class ComfyUIClient:
             with open(workflow_file, "r") as f:
                 workflow = json.load(f)
 
+            # Get the appropriate mapping for this workflow
+            mapping = WORKFLOW_MAPPINGS.get(workflow_id, DEFAULT_MAPPING)
+            logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
+
             params = {"prompt": prompt, "width": width, "height": height}
             if model:
                 # Validate or correct model name
@@ -50,8 +64,8 @@ class ComfyUIClient:
                 params["model"] = model
 
             for param_key, value in params.items():
-                if param_key in DEFAULT_MAPPING:
-                    node_id, input_key = DEFAULT_MAPPING[param_key]
+                if param_key in mapping:
+                    node_id, input_key = mapping[param_key]
                     if node_id not in workflow:
                         raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
                     workflow[node_id]["inputs"][input_key] = value

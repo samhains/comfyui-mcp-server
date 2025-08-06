@@ -63,7 +63,7 @@ def generate_image(params: str) -> dict:
         return {"error": str(e)}
 
 # WebSocket server
-async def handle_websocket(websocket, path):
+async def handle_websocket(websocket):
     logger.info("WebSocket client connected")
     try:
         async for message in websocket:
