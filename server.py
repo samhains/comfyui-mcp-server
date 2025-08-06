@@ -40,17 +40,29 @@ mcp = FastMCP("ComfyUI_MCP_Server", lifespan=app_lifespan)
 # Define the image generation tool
 @mcp.tool()
 def generate_image(params: str) -> dict:
-    """Generate an image using ComfyUI"""
+    """Generate an image using ComfyUI
+    
+    Args:
+        params: JSON string containing:
+            - prompt (required): Text description of the image to generate
+            - width (optional): Image width in pixels, defaults to 1024
+            - height (optional): Image height in pixels, defaults to 1024
+    
+    Returns:
+        dict: Contains 'image_url' on success or 'error' on failure
+        
+    Example params: '{"prompt": "anime girl in armor", "width": 512, "height": 768}'
+    """
     logger.info(f"Received request with params: {params}")
     try:
         param_dict = json.loads(params)
         prompt = param_dict["prompt"]
-        width = param_dict.get("width", 512)
-        height = param_dict.get("height", 512)
-        workflow_id = param_dict.get("workflow_id", "basic_api_test")
-        model = param_dict.get("model", None)
+        width = param_dict.get("width", 1024)  # Default to 1024
+        height = param_dict.get("height", 1024)  # Default to 1024
+        workflow_id = "flux-dev-workflow"  # Always use flux-dev workflow
+        model = "flux1-dev-fp8.safetensors"  # Fixed default model
 
-        # Use global comfyui_client (since mcp.context isn’t available)
+        # Use global comfyui_client (since mcp.context isn't available)
         image_url = comfyui_client.generate_image(
             prompt=prompt,
             width=width,

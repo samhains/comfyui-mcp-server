@@ -5,8 +5,8 @@ A lightweight Python-based MCP (Model Context Protocol) server that interfaces w
 ## Overview
 
 This project enables AI agents to send image generation requests to ComfyUI using the MCP protocol over WebSocket. It supports:
-- Flexible workflow selection (e.g., `basic_api_test.json`).
-- Dynamic parameters: `prompt`, `width`, `height`, and `model`.
+- Fixed workflow selection (`flux-dev-workflow.json`).
+- Dynamic parameters: `prompt`, `width`, and `height` (defaults to 1024x1024).
 - Returns image URLs served by ComfyUI.
 
 ## Prerequisites
@@ -48,7 +48,7 @@ This project enables AI agents to send image generation requests to ComfyUI usin
 2. **Test with the Client**:
    python client.py
 
-- Sends a sample request: `"a dog wearing sunglasses"` with `512x512` using `sd_xl_base_1.0.safetensors`.
+- Sends a sample request: `"a dog wearing sunglasses"` using the hardcoded flux-dev workflow.
 - Output example:
   ```
   Response from server:
@@ -58,17 +58,16 @@ This project enables AI agents to send image generation requests to ComfyUI usin
   ```
 
 3. **Custom Requests**:
-- Modify `client.py`’s `payload` to change `prompt`, `width`, `height`, `workflow_id`, or `model`.
+- Modify `client.py`'s `payload` to change `prompt`, `width`, and `height` parameters.
 - Example:
   ```
   "params": json.dumps({
       "prompt": "a cat in space",
       "width": 768,
-      "height": 768,
-      "workflow_id": "basic_api_test",
-      "model": "v1-5-pruned-emaonly.ckpt"
+      "height": 1024
   })
   ```
+- If width/height are omitted, they default to 1024x1024.
 
 ## Project Structure
 
@@ -79,9 +78,14 @@ This project enables AI agents to send image generation requests to ComfyUI usin
 
 ## Notes
 
-- Ensure your chosen `model` (e.g., `v1-5-pruned-emaonly.ckpt`) exists in `<ComfyUI_dir>/models/checkpoints/`.
+- The workflow uses `flux1-dev-fp8.safetensors` model which must exist in `<ComfyUI_dir>/models/checkpoints/`.
 - The MCP SDK lacks native WebSocket transport; this uses a custom implementation.
-- For custom workflows, adjust node IDs in `comfyui_client.py`’s `DEFAULT_MAPPING` if needed.
+- Model and other workflow parameters are hardcoded in the `flux-dev-workflow.json` file, except for prompt, width, and height which can be customized.
+- Successfully tested with anime-style image generation including Golden Boy art style characters.
+
+## Planned Features
+
+- **Video Generation**: `generate_video_from_image` functionality to create videos from generated or uploaded images.
 
 ## Contributing
 
