@@ -6,7 +6,7 @@ import argparse
 payload = {
     "tool": "generate_image",
     "params": json.dumps({
-        "prompt": "an english mastiff dog sitting on a large boulder, bright shiny day",
+        "prompt": "an oddly satisfying jelly castle",
         "width": 1024,
         "height": 1024,
         "workflow_id": "flux-dev-workflow",
@@ -21,8 +21,14 @@ async def test_mcp_server(host="localhost"):
             print("Connected to MCP server")
             await ws.send(json.dumps(payload))
             response = await ws.recv()
+            response_data = json.loads(response)
+            
+            # Replace localhost with the actual host in image_url
+            if "image_url" in response_data and host != "localhost":
+                response_data["image_url"] = response_data["image_url"].replace("localhost", host)
+            
             print("Response from server:")
-            print(json.dumps(json.loads(response), indent=2))
+            print(json.dumps(response_data, indent=2))
     except Exception as e:
         print(f"WebSocket error: {e}")
 
