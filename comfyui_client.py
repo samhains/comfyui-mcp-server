@@ -2,6 +2,7 @@ import requests
 import json
 import time
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("ComfyUIClient")
@@ -18,6 +19,9 @@ WORKFLOW_MAPPINGS = {
         "width": ("27", "width"),
         "height": ("27", "height"),
         "model": ("30", "ckpt_name")
+    },
+    "wan-2.2-t2v-api": {
+        "prompt": ("6", "text")
     }
 }
 
@@ -45,7 +49,8 @@ class ComfyUIClient:
 
     def generate_image(self, prompt, width, height, workflow_id="basic_api_test", model=None):
         try:
-            workflow_file = f"workflows/{workflow_id}.json"
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
             with open(workflow_file, "r") as f:
                 workflow = json.load(f)
 
@@ -93,6 +98,66 @@ class ComfyUIClient:
                     return image_url
                 time.sleep(1)
             raise Exception(f"Workflow {prompt_id} didn’t complete within {max_attempts} seconds")
+
+        except FileNotFoundError:
+            raise Exception(f"Workflow file '{workflow_file}' not found")
+        except KeyError as e:
+            raise Exception(f"Workflow error - invalid node or input: {e}")
+        except requests.RequestException as e:
+            raise Exception(f"ComfyUI API error: {e}")
+
+    def generate_video(self, prompt, workflow_id="wan-2.2-t2v-api"):
+        try:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
+            with open(workflow_file, "r") as f:
+                workflow = json.load(f)
+
+            # Get the appropriate mapping for this workflow
+            mapping = WORKFLOW_MAPPINGS.get(workflow_id, DEFAULT_MAPPING)
+            logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
+
+            params = {"prompt": prompt}
+
+            for param_key, value in params.items():
+                if param_key in mapping:
+                    node_id, input_key = mapping[param_key]
+                    if node_id not in workflow:
+                        raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
+                    workflow[node_id]["inputs"][input_key] = value
+
+            logger.info(f"Submitting video workflow {workflow_id} to ComfyUI...")
+            response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
+            if response.status_code != 200:
+                raise Exception(f"Failed to queue workflow: {response.status_code} - {response.text}")
+
+            prompt_id = response.json()["prompt_id"]
+            logger.info(f"Queued video workflow with prompt_id: {prompt_id}")
+
+            max_attempts = 180  # 3 minutes at 1 second intervals
+            for _ in range(max_attempts):
+                history = requests.get(f"{self.base_url}/history/{prompt_id}").json()
+                if history.get(prompt_id):
+                    outputs = history[prompt_id]["outputs"]
+                    logger.info("Video workflow outputs: %s", json.dumps(outputs, indent=2))
+                    # Look for video output node (SaveVideo node should be node 61)
+                    video_node = None
+                    for node_id, output in outputs.items():
+                        if "images" in output and any(item["filename"].endswith(".mp4") for item in output["images"]):
+                            video_node = node_id
+                            break
+                    if not video_node:
+                        raise Exception(f"No output node with video found: {outputs}")
+                    
+                    # Video is saved in "images" array but with .mp4 extension
+                    video_data = outputs[video_node]["images"][0]
+                    video_filename = video_data["filename"]
+                    subfolder = video_data.get("subfolder", "")
+                    video_url = f"{self.base_url}/view?filename={video_filename}&subfolder={subfolder}&type=output"
+                    logger.info(f"Generated video URL: {video_url}")
+                    return video_url
+                time.sleep(1)
+            raise Exception(f"Video workflow {prompt_id} didn't complete within {max_attempts} seconds")
 
         except FileNotFoundError:
             raise Exception(f"Workflow file '{workflow_file}' not found")

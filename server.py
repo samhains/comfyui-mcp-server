@@ -76,6 +76,37 @@ def generate_image(params: str) -> dict:
         logger.error(f"Error: {e}")
         return {"error": str(e)}
 
+# Define the video generation tool
+@mcp.tool()
+def generate_video(params: str) -> dict:
+    """Generate a video using ComfyUI with WAN 2.2 T2V model
+    
+    Args:
+        params: JSON string containing:
+            - prompt (required): Text description of the video to generate
+    
+    Returns:
+        dict: Contains 'video_url' on success or 'error' on failure
+        
+    Example params: '{"prompt": "a cat walking in a garden"}'
+    """
+    logger.info(f"Received video request with params: {params}")
+    try:
+        param_dict = json.loads(params)
+        prompt = param_dict["prompt"]
+        workflow_id = "wan-2.2-t2v-api"  # Fixed workflow for video generation
+
+        # Use global comfyui_client
+        video_url = comfyui_client.generate_video(
+            prompt=prompt,
+            workflow_id=workflow_id
+        )
+        logger.info(f"Returning video URL: {video_url}")
+        return {"video_url": video_url}
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
 # Create FastAPI app for HTTP endpoints
 app = FastAPI(title="ComfyUI MCP Server")
 
@@ -111,6 +142,50 @@ async def generate_image_stream(params: dict):
             
         except Exception as e:
             logger.error(f"Error in stream: {e}")
+            yield f"data: {json.dumps({'status': 'error', 'error': str(e)})}\n\n"
+    
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+        }
+    )
+
+@app.post("/generate_video")
+async def generate_video_http(params: dict):
+    """HTTP endpoint for video generation"""
+    logger.info(f"Received HTTP video request with params: {params}")
+    try:
+        result = generate_video(json.dumps(params))
+        return result
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
+@app.post("/generate_video_stream")
+async def generate_video_stream(params: dict):
+    """SSE endpoint for streaming video generation progress"""
+    logger.info(f"Received SSE video request with params: {params}")
+    
+    async def event_stream():
+        try:
+            # Send initial status
+            yield f"data: {json.dumps({'status': 'starting', 'message': 'Initializing video generation...'})}\n\n"
+            
+            # Generate video (this will still use polling internally)
+            result = generate_video(json.dumps(params))
+            
+            # Send progress updates
+            yield f"data: {json.dumps({'status': 'processing', 'message': 'Generating video with WAN 2.2...'})}\n\n"
+            
+            # Send final result
+            yield f"data: {json.dumps({'status': 'complete', 'result': result})}\n\n"
+            
+        except Exception as e:
+            logger.error(f"Error in video stream: {e}")
             yield f"data: {json.dumps({'status': 'error', 'error': str(e)})}\n\n"
     
     return StreamingResponse(
