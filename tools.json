@@ -5,12 +5,6 @@
       "description": "Generates images using Flux model through ComfyUI",
       "workflow_id": "flux-dev-workflow",
       "model": "flux1-dev-fp8.safetensors",
-      "resolution": {
-        "width": 1024,
-        "height": 1024,
-        "description": "Default image resolution. Can be overridden per request."
-      },
-      "timeout": 300,
       "parameters": {
         "prompt": {
           "required": true,
@@ -39,12 +33,6 @@
     "generate_video": {
       "description": "Generates videos with audio using MMAudio workflow through ComfyUI",
       "workflow_id": "mmaudio-workflow",
-      "resolution": {
-        "width": 768,
-        "height": 512,
-        "description": "Default video resolution. Fixed for this workflow."
-      },
-      "timeout": 600,
       "parameters": {
         "prompt": {
           "required": true,
@@ -55,12 +43,18 @@
           "required": true,
           "type": "string",
           "description": "Text description of the audio/sound to generate for the video"
+        },
+        "frame_length": {
+          "required": false,
+          "type": "integer",
+          "description": "Number of frames for the video. Defaults to config value if not specified."
         }
       },
       "workflow_mapping": {
         "description": "Maps parameters to ComfyUI workflow nodes",
         "prompt": ["6", "text"],
-        "audio_prompt": ["83:75", "prompt"]
+        "audio_prompt": ["83:75", "prompt"],
+        "frame_length": ["59", "length"]
       },
       "notes": [
         "This workflow generates both video and audio using MMAudio",

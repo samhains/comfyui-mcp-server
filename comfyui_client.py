@@ -25,7 +25,8 @@ WORKFLOW_MAPPINGS = {
     },
     "mmaudio-workflow": {
         "prompt": ("6", "text"),
-        "audio_prompt": ("83:75", "prompt")
+        "audio_prompt": ("83:75", "prompt"),
+        "frame_length": ("59", "length")
     }
 }
 
@@ -110,7 +111,7 @@ class ComfyUIClient:
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
 
-    def generate_video(self, prompt, audio_prompt=None, workflow_id="wan-2.2-t2v-api", timeout=600):
+    def generate_video(self, prompt, audio_prompt=None, frame_length=None, workflow_id="wan-2.2-t2v-api", timeout=600):
         try:
             script_dir = os.path.dirname(os.path.abspath(__file__))
             workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
@@ -124,6 +125,8 @@ class ComfyUIClient:
             params = {"prompt": prompt}
             if audio_prompt:
                 params["audio_prompt"] = audio_prompt
+            if frame_length:
+                params["frame_length"] = frame_length
 
             for param_key, value in params.items():
                 if param_key in mapping:
@@ -131,6 +134,26 @@ class ComfyUIClient:
                     if node_id not in workflow:
                         raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
                     workflow[node_id]["inputs"][input_key] = value
+            
+            # Calculate dynamic audio duration for mmaudio workflow
+            if workflow_id == "mmaudio-workflow":
+                try:
+                    # Get video parameters from workflow nodes
+                    frame_count = workflow.get("59", {}).get("inputs", {}).get("length", 181)
+                    
+                    # Use base generation rate (16fps) for duration calculation
+                    # With 32fps output and 2x RIFE interpolation, this maintains original timing
+                    base_fps = 16
+                    duration = frame_count / base_fps
+                    
+                    logger.info(f"Calculated audio duration: {frame_count} frames ÷ {base_fps} fps (base rate) = {duration} seconds")
+                    
+                    # Update audio duration in MMAudioSampler node
+                    if "83:75" in workflow:
+                        workflow["83:75"]["inputs"]["duration"] = duration
+                        logger.info(f"Set MMAudioSampler duration to {duration} seconds")
+                except Exception as e:
+                    logger.warning(f"Failed to calculate dynamic duration, using default: {e}")
 
             logger.info(f"Submitting video workflow {workflow_id} to ComfyUI...")
             response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
@@ -146,17 +169,23 @@ class ComfyUIClient:
                 if history.get(prompt_id):
                     outputs = history[prompt_id]["outputs"]
                     logger.info("Video workflow outputs: %s", json.dumps(outputs, indent=2))
-                    # Look for video output node (SaveVideo node should be node 61)
+                    # Look for video output node - check both "images" and "gifs" arrays
                     video_node = None
                     for node_id, output in outputs.items():
                         if "images" in output and any(item["filename"].endswith(".mp4") for item in output["images"]):
                             video_node = node_id
                             break
+                        elif "gifs" in output and any(item["filename"].endswith(".mp4") for item in output["gifs"]):
+                            video_node = node_id
+                            break
                     if not video_node:
                         raise Exception(f"No output node with video found: {outputs}")
                     
-                    # Video is saved in "images" array but with .mp4 extension
-                    video_data = outputs[video_node]["images"][0]
+                    # Video can be in either "images" or "gifs" array
+                    if "images" in outputs[video_node]:
+                        video_data = outputs[video_node]["images"][0]
+                    else:
+                        video_data = outputs[video_node]["gifs"][0]
                     video_filename = video_data["filename"]
                     subfolder = video_data.get("subfolder", "")
                     video_url = f"{self.base_url}/view?filename={video_filename}&subfolder={subfolder}&type=output"

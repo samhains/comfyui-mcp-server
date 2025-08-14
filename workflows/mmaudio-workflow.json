@@ -161,7 +161,7 @@
   },
   "74": {
     "inputs": {
-      "frame_rate": 30,
+      "frame_rate": 32,
       "loop_count": 0,
       "filename_prefix": "wan_video_T2V",
       "format": "video/h264-mp4",
@@ -321,12 +321,12 @@
   },
   "83:75": {
     "inputs": {
-      "duration": 5.000000000000001,
+      "duration": 11.3125,
       "steps": 50,
       "cfg": 4.5,
       "seed": 1,
-      "prompt": "A loud, intense sizzle of a beef patty on a hot steel griddle. The sharp, clean metallic scrape of a spatula, followed by the sound of the patty being flipped and landing back on the hot surface with a final, crisp hiss.",
-      "negative_prompt": "talking, music",
+      "prompt": "A police car siren",
+      "negative_prompt": "",
       "mask_away_clip": false,
       "force_offload": true,
       "mmaudio_model": [

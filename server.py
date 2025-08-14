@@ -89,10 +89,10 @@ def generate_image(params: str) -> dict:
         param_dict = json.loads(params)
         prompt = param_dict["prompt"]
         
-        # Get settings from tools definition
+        # Get settings from tools definition and config
         tool_config = tools["generate_image"]
-        width = tool_config["resolution"]["width"]
-        height = tool_config["resolution"]["height"]
+        width = config["resolutions"]["image_generation"]["width"]
+        height = config["resolutions"]["image_generation"]["height"]
         workflow_id = tool_config["workflow_id"]
         model = tool_config["model"]
 
@@ -103,7 +103,7 @@ def generate_image(params: str) -> dict:
             height=height,
             workflow_id=workflow_id,
             model=model,
-            timeout=tool_config["timeout"]
+            timeout=config["timeouts"]["image_generation"]
         )
         logger.info(f"Returning image URL: {image_url}")
         return {"image_url": image_url}
@@ -130,17 +130,23 @@ def generate_video(params: str) -> dict:
         param_dict = json.loads(params)
         prompt = param_dict["prompt"]
         audio_prompt = param_dict.get("audio_prompt")
+        frame_length = param_dict.get("frame_length")
         
         # Get settings from tools definition
         tool_config = tools["generate_video"]
         workflow_id = tool_config["workflow_id"]
+        
+        # Use default frame length from config if not provided
+        if frame_length is None:
+            frame_length = config.get("video_generation", {}).get("default_frame_length")
 
         # Use global comfyui_client
         video_url = comfyui_client.generate_video(
             prompt=prompt,
             audio_prompt=audio_prompt,
+            frame_length=frame_length,
             workflow_id=workflow_id,
-            timeout=tool_config["timeout"]
+            timeout=config["timeouts"]["video_generation"]
         )
         logger.info(f"Returning video URL: {video_url}")
         return {"video_url": video_url}
