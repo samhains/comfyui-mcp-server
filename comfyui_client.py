@@ -22,6 +22,10 @@ WORKFLOW_MAPPINGS = {
     },
     "wan-2.2-t2v-api": {
         "prompt": ("6", "text")
+    },
+    "mmaudio-workflow": {
+        "prompt": ("6", "text"),
+        "audio_prompt": ("83:75", "prompt")
     }
 }
 
@@ -106,7 +110,7 @@ class ComfyUIClient:
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
 
-    def generate_video(self, prompt, workflow_id="wan-2.2-t2v-api", timeout=600):
+    def generate_video(self, prompt, audio_prompt=None, workflow_id="wan-2.2-t2v-api", timeout=600):
         try:
             script_dir = os.path.dirname(os.path.abspath(__file__))
             workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
@@ -118,6 +122,8 @@ class ComfyUIClient:
             logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
 
             params = {"prompt": prompt}
+            if audio_prompt:
+                params["audio_prompt"] = audio_prompt
 
             for param_key, value in params.items():
                 if param_key in mapping:

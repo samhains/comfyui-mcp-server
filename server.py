@@ -27,7 +27,24 @@ def load_config():
         logger.error(f"Invalid JSON in config file {config_path}")
         raise
 
+def load_tools():
+    """Load tool definitions from separate tools file"""
+    config = load_config()
+    tools_file = config.get("tools_file", "tools.json")
+    tools_path = os.path.join(os.path.dirname(__file__), tools_file)
+    try:
+        with open(tools_path, 'r') as f:
+            tools_data = json.load(f)
+            return tools_data.get("tools", {})
+    except FileNotFoundError:
+        logger.error(f"Tools file not found at {tools_path}")
+        raise
+    except json.JSONDecodeError:
+        logger.error(f"Invalid JSON in tools file {tools_path}")
+        raise
+
 config = load_config()
+tools = load_tools()
 
 # Global ComfyUI client using config
 comfyui_client = ComfyUIClient(config["server"]["comfyui_url"])
@@ -72,8 +89,8 @@ def generate_image(params: str) -> dict:
         param_dict = json.loads(params)
         prompt = param_dict["prompt"]
         
-        # Get settings from config
-        tool_config = config["tools"]["generate_image"]
+        # Get settings from tools definition
+        tool_config = tools["generate_image"]
         width = tool_config["resolution"]["width"]
         height = tool_config["resolution"]["height"]
         workflow_id = tool_config["workflow_id"]
@@ -112,14 +129,16 @@ def generate_video(params: str) -> dict:
     try:
         param_dict = json.loads(params)
         prompt = param_dict["prompt"]
+        audio_prompt = param_dict.get("audio_prompt")
         
-        # Get settings from config
-        tool_config = config["tools"]["generate_video"]
+        # Get settings from tools definition
+        tool_config = tools["generate_video"]
         workflow_id = tool_config["workflow_id"]
 
         # Use global comfyui_client
         video_url = comfyui_client.generate_video(
             prompt=prompt,
+            audio_prompt=audio_prompt,
             workflow_id=workflow_id,
             timeout=tool_config["timeout"]
         )
