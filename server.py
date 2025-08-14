@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import os
 from typing import AsyncIterator
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Response
@@ -13,8 +14,23 @@ from comfyui_client import ComfyUIClient
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("MCP_Server")
 
-# Global ComfyUI client (fallback since context isn't available)
-comfyui_client = ComfyUIClient("http://100.75.77.33:8188")
+# Load configuration
+def load_config():
+    config_path = os.path.join(os.path.dirname(__file__), "config.json")
+    try:
+        with open(config_path, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logger.error(f"Config file not found at {config_path}")
+        raise
+    except json.JSONDecodeError:
+        logger.error(f"Invalid JSON in config file {config_path}")
+        raise
+
+config = load_config()
+
+# Global ComfyUI client using config
+comfyui_client = ComfyUIClient(config["server"]["comfyui_url"])
 
 # Define application context (for future use)
 class AppContext:
@@ -45,22 +61,23 @@ def generate_image(params: str) -> dict:
     Args:
         params: JSON string containing:
             - prompt (required): Text description of the image to generate
-            - width (optional): Image width in pixels, defaults to 1024
-            - height (optional): Image height in pixels, defaults to 1024
     
     Returns:
         dict: Contains 'image_url' on success or 'error' on failure
         
-    Example params: '{"prompt": "anime girl in armor", "width": 512, "height": 768}'
+    Example params: '{"prompt": "anime girl in armor"}'
     """
     logger.info(f"Received request with params: {params}")
     try:
         param_dict = json.loads(params)
         prompt = param_dict["prompt"]
-        width = param_dict.get("width", 1024)  # Default to 1024
-        height = param_dict.get("height", 1024)  # Default to 1024
-        workflow_id = "flux-dev-workflow"  # Always use flux-dev workflow
-        model = "flux1-dev-fp8.safetensors"  # Fixed default model
+        
+        # Get settings from config
+        tool_config = config["tools"]["generate_image"]
+        width = tool_config["resolution"]["width"]
+        height = tool_config["resolution"]["height"]
+        workflow_id = tool_config["workflow_id"]
+        model = tool_config["model"]
 
         # Use global comfyui_client (since mcp.context isn't available)
         image_url = comfyui_client.generate_image(
@@ -68,7 +85,8 @@ def generate_image(params: str) -> dict:
             width=width,
             height=height,
             workflow_id=workflow_id,
-            model=model
+            model=model,
+            timeout=tool_config["timeout"]
         )
         logger.info(f"Returning image URL: {image_url}")
         return {"image_url": image_url}
@@ -94,12 +112,16 @@ def generate_video(params: str) -> dict:
     try:
         param_dict = json.loads(params)
         prompt = param_dict["prompt"]
-        workflow_id = "wan-2.2-t2v-api"  # Fixed workflow for video generation
+        
+        # Get settings from config
+        tool_config = config["tools"]["generate_video"]
+        workflow_id = tool_config["workflow_id"]
 
         # Use global comfyui_client
         video_url = comfyui_client.generate_video(
             prompt=prompt,
-            workflow_id=workflow_id
+            workflow_id=workflow_id,
+            timeout=tool_config["timeout"]
         )
         logger.info(f"Returning video URL: {video_url}")
         return {"video_url": video_url}

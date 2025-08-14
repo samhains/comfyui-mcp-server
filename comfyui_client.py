@@ -47,7 +47,7 @@ class ComfyUIClient:
             logger.warning(f"Error fetching models: {e}")
             return []
 
-    def generate_image(self, prompt, width, height, workflow_id="basic_api_test", model=None):
+    def generate_image(self, prompt, width, height, workflow_id="basic_api_test", model=None, timeout=300):
         try:
             script_dir = os.path.dirname(os.path.abspath(__file__))
             workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
@@ -83,7 +83,7 @@ class ComfyUIClient:
             prompt_id = response.json()["prompt_id"]
             logger.info(f"Queued workflow with prompt_id: {prompt_id}")
 
-            max_attempts = 30
+            max_attempts = timeout  # Use timeout from config
             for _ in range(max_attempts):
                 history = requests.get(f"{self.base_url}/history/{prompt_id}").json()
                 if history.get(prompt_id):
@@ -106,7 +106,7 @@ class ComfyUIClient:
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
 
-    def generate_video(self, prompt, workflow_id="wan-2.2-t2v-api"):
+    def generate_video(self, prompt, workflow_id="wan-2.2-t2v-api", timeout=600):
         try:
             script_dir = os.path.dirname(os.path.abspath(__file__))
             workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
@@ -134,7 +134,7 @@ class ComfyUIClient:
             prompt_id = response.json()["prompt_id"]
             logger.info(f"Queued video workflow with prompt_id: {prompt_id}")
 
-            max_attempts = 180  # 3 minutes at 1 second intervals
+            max_attempts = timeout  # Use timeout from config
             for _ in range(max_attempts):
                 history = requests.get(f"{self.base_url}/history/{prompt_id}").json()
                 if history.get(prompt_id):

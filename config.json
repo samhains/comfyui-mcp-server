@@ -1,0 +1,24 @@
+{
+  "tools": {
+    "generate_image": {
+      "workflow_id": "flux-dev-workflow",
+      "model": "flux1-dev-fp8.safetensors",
+      "resolution": {
+        "width": 1024,
+        "height": 1024
+      },
+      "timeout": 300
+    },
+    "generate_video": {
+      "workflow_id": "wan-2.2-t2v-api-interp",
+      "resolution": {
+        "width": 768,
+        "height": 512
+      },
+      "timeout": 600
+    }
+  },
+  "server": {
+    "comfyui_url": "http://100.75.77.33:8188"
+  }
+}
