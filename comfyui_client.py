@@ -21,12 +21,23 @@ WORKFLOW_MAPPINGS = {
         "model": ("30", "ckpt_name")
     },
     "wan-2.2-t2v-api": {
-        "prompt": ("6", "text")
+        "prompt": ("6", "text"),
+        "width": ("59", "width"),
+        "height": ("59", "height")
     },
     "mmaudio-workflow": {
         "prompt": ("6", "text"),
         "audio_prompt": ("83:75", "prompt"),
-        "frame_length": ("59", "length")
+        "frame_length": ("59", "length"),
+        "width": ("59", "width"),
+        "height": ("59", "height")
+    },
+    "wan-2.2-t2v-hq": {
+        "prompt": ("141", "value"),
+        "audio_prompt": ("147", "value"),
+        "width": ("143", "value"),
+        "height": ("144", "value"),
+        "frame_length": ("145", "value")
     }
 }
 
@@ -111,8 +122,15 @@ class ComfyUIClient:
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
 
-    def generate_video(self, prompt, audio_prompt=None, frame_length=None, workflow_id="wan-2.2-t2v-api", timeout=600):
+    def generate_video(self, prompt, width=None, height=None, audio_prompt=None, frame_length=None, workflow_id=None, timeout=600):
         try:
+            # Load config to get default workflow if none specified
+            if workflow_id is None:
+                config_path = os.path.join(os.path.dirname(__file__), "config.json")
+                with open(config_path, 'r') as f:
+                    config = json.load(f)
+                workflow_id = config["video_generation"]["workflow"]
+            
             script_dir = os.path.dirname(os.path.abspath(__file__))
             workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
             with open(workflow_file, "r") as f:
@@ -123,6 +141,10 @@ class ComfyUIClient:
             logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
 
             params = {"prompt": prompt}
+            if width is not None:
+                params["width"] = width
+            if height is not None:
+                params["height"] = height
             if audio_prompt:
                 params["audio_prompt"] = audio_prompt
             if frame_length:

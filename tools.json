@@ -31,8 +31,7 @@
       }
     },
     "generate_video": {
-      "description": "Generates videos with audio using MMAudio workflow through ComfyUI",
-      "workflow_id": "mmaudio-workflow",
+      "description": "Generates videos using WAN 2.2 T2V workflow through ComfyUI",
       "parameters": {
         "prompt": {
           "required": true,
@@ -48,13 +47,25 @@
           "required": false,
           "type": "integer",
           "description": "Number of frames for the video. Defaults to config value if not specified."
+        },
+        "width": {
+          "required": false,
+          "type": "integer",
+          "description": "Video width in pixels. Defaults to config value if not specified."
+        },
+        "height": {
+          "required": false,
+          "type": "integer",
+          "description": "Video height in pixels. Defaults to config value if not specified."
         }
       },
       "workflow_mapping": {
         "description": "Maps parameters to ComfyUI workflow nodes",
-        "prompt": ["6", "text"],
-        "audio_prompt": ["83:75", "prompt"],
-        "frame_length": ["59", "length"]
+        "prompt": ["141", "value"],
+        "audio_prompt": ["147", "value"],
+        "frame_length": ["145", "value"],
+        "width": ["143", "value"],
+        "height": ["144", "value"]
       },
       "notes": [
         "This workflow generates both video and audio using MMAudio",

@@ -119,11 +119,15 @@ def generate_video(params: str) -> dict:
     Args:
         params: JSON string containing:
             - prompt (required): Text description of the video to generate
+            - audio_prompt (optional): Text description of the audio/sound to generate
+            - frame_length (optional): Number of frames for the video
+            - width (optional): Video width in pixels
+            - height (optional): Video height in pixels
     
     Returns:
         dict: Contains 'video_url' on success or 'error' on failure
         
-    Example params: '{"prompt": "a cat walking in a garden"}'
+    Example params: '{"prompt": "a cat walking in a garden", "width": 1920, "height": 1080}'
     """
     logger.info(f"Received video request with params: {params}")
     try:
@@ -132,9 +136,13 @@ def generate_video(params: str) -> dict:
         audio_prompt = param_dict.get("audio_prompt")
         frame_length = param_dict.get("frame_length")
         
-        # Get settings from tools definition
+        # Get settings from tools definition and config
         tool_config = tools["generate_video"]
         workflow_id = tool_config["workflow_id"]
+        
+        # Use provided resolution or fall back to config values
+        width = param_dict.get("width", config["resolutions"]["video_generation"]["width"])
+        height = param_dict.get("height", config["resolutions"]["video_generation"]["height"])
         
         # Use default frame length from config if not provided
         if frame_length is None:
@@ -143,6 +151,8 @@ def generate_video(params: str) -> dict:
         # Use global comfyui_client
         video_url = comfyui_client.generate_video(
             prompt=prompt,
+            width=width,
+            height=height,
             audio_prompt=audio_prompt,
             frame_length=frame_length,
             workflow_id=workflow_id,

@@ -15,13 +15,14 @@
       "description": "Default image resolution. Can be overridden per request."
     },
     "video_generation": {
-      "width": 720,
-      "height": 1280,
+      "width": 1280,
+      "height": 720,
       "description": "Default video resolution. Fixed for this workflow."
     }
   },
   "video_generation": {
-    "default_frame_length": 161,
-    "description": "Default frame length for video generation. Can be overridden per request."
+    "default_frame_length": 81,
+    "workflow": "wan-2.2-t2v-hq",
+    "description": "Default frame length and workflow for video generation. Can be overridden per request."
   }
 }

@@ -189,7 +189,7 @@
     "inputs": {
       "shift": 8,
       "model": [
-        "84:73",
+        "84:64",
         0
       ]
     },
@@ -278,45 +278,17 @@
       "title": "LoraLoaderModelOnly"
     }
   },
-  "84:72": {
-    "inputs": {
-      "lora_name": "goldenboylora-e504.safetensors",
-      "strength_model": 1.0000000000000002,
-      "model": [
-        "84:65",
-        0
-      ]
-    },
-    "class_type": "LoraLoaderModelOnly",
-    "_meta": {
-      "title": "LoraLoaderModelOnly"
-    }
-  },
   "84:54": {
     "inputs": {
       "shift": 8.000000000000002,
       "model": [
-        "84:72",
+        "84:65",
         0
       ]
     },
     "class_type": "ModelSamplingSD3",
     "_meta": {
       "title": "ModelSamplingSD3"
-    }
-  },
-  "84:73": {
-    "inputs": {
-      "lora_name": "goldenboylora-e504.safetensors",
-      "strength_model": 1.0000000000000002,
-      "model": [
-        "84:64",
-        0
-      ]
-    },
-    "class_type": "LoraLoaderModelOnly",
-    "_meta": {
-      "title": "LoraLoaderModelOnly"
     }
   },
   "83:75": {
