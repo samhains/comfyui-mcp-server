@@ -191,7 +191,7 @@ class ComfyUIClient:
                 if history.get(prompt_id):
                     outputs = history[prompt_id]["outputs"]
                     logger.info("Video workflow outputs: %s", json.dumps(outputs, indent=2))
-                    # Look for video output node - check both "images" and "gifs" arrays
+                    # Look for video output node - check "images", "gifs", and "filenames" arrays
                     video_node = None
                     for node_id, output in outputs.items():
                         if "images" in output and any(item["filename"].endswith(".mp4") for item in output["images"]):
@@ -200,14 +200,19 @@ class ComfyUIClient:
                         elif "gifs" in output and any(item["filename"].endswith(".mp4") for item in output["gifs"]):
                             video_node = node_id
                             break
+                        elif "filenames" in output and any(item["filename"].endswith(".mp4") for item in output["filenames"]):
+                            video_node = node_id
+                            break
                     if not video_node:
                         raise Exception(f"No output node with video found: {outputs}")
                     
-                    # Video can be in either "images" or "gifs" array
+                    # Video can be in "images", "gifs", or "filenames" array
                     if "images" in outputs[video_node]:
                         video_data = outputs[video_node]["images"][0]
-                    else:
+                    elif "gifs" in outputs[video_node]:
                         video_data = outputs[video_node]["gifs"][0]
+                    else:
+                        video_data = outputs[video_node]["filenames"][0]
                     video_filename = video_data["filename"]
                     subfolder = video_data.get("subfolder", "")
                     video_url = f"{self.base_url}/view?filename={video_filename}&subfolder={subfolder}&type=output"

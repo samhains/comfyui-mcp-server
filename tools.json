@@ -32,6 +32,7 @@
     },
     "generate_video": {
       "description": "Generates videos using WAN 2.2 T2V workflow through ComfyUI",
+      "workflow_id": "wan-2.2-t2v-hq",
       "parameters": {
         "prompt": {
           "required": true,
