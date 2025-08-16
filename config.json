@@ -22,7 +22,7 @@
   },
   "video_generation": {
     "default_frame_length": 81,
-    "workflow": "wan-2.2-t2v-hq",
+    "workflow": "wan2.2-t2v-sd",
     "description": "Default frame length and workflow for video generation. Can be overridden per request."
   }
 }

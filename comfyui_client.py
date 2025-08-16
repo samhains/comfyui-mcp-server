@@ -38,6 +38,13 @@ WORKFLOW_MAPPINGS = {
         "width": ("143", "value"),
         "height": ("144", "value"),
         "frame_length": ("145", "value")
+    },
+    "wan2.2-t2v-sd": {
+        "prompt": ("141", "value"),
+        "audio_prompt": ("147", "value"),
+        "width": ("143", "value"),
+        "height": ("144", "value"),
+        "frame_length": ("145", "value")
     }
 }
 
@@ -63,7 +70,7 @@ class ComfyUIClient:
             logger.warning(f"Error fetching models: {e}")
             return []
 
-    def generate_image(self, prompt, width, height, workflow_id="basic_api_test", model=None, timeout=300):
+    def generate_image(self, prompt, width, height, workflow_id="basic_api_test", model=None):
         try:
             script_dir = os.path.dirname(os.path.abspath(__file__))
             workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
@@ -99,8 +106,7 @@ class ComfyUIClient:
             prompt_id = response.json()["prompt_id"]
             logger.info(f"Queued workflow with prompt_id: {prompt_id}")
 
-            max_attempts = timeout  # Use timeout from config
-            for _ in range(max_attempts):
+            while True:
                 history = requests.get(f"{self.base_url}/history/{prompt_id}").json()
                 if history.get(prompt_id):
                     outputs = history[prompt_id]["outputs"]
@@ -113,7 +119,6 @@ class ComfyUIClient:
                     logger.info(f"Generated image URL: {image_url}")
                     return image_url
                 time.sleep(1)
-            raise Exception(f"Workflow {prompt_id} didn’t complete within {max_attempts} seconds")
 
         except FileNotFoundError:
             raise Exception(f"Workflow file '{workflow_file}' not found")
@@ -122,7 +127,7 @@ class ComfyUIClient:
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
 
-    def generate_video(self, prompt, width=None, height=None, audio_prompt=None, frame_length=None, workflow_id=None, timeout=600):
+    def generate_video(self, prompt, width=None, height=None, audio_prompt=None, frame_length=None, workflow_id=None):
         try:
             # Load config to get default workflow if none specified
             if workflow_id is None:
@@ -185,8 +190,7 @@ class ComfyUIClient:
             prompt_id = response.json()["prompt_id"]
             logger.info(f"Queued video workflow with prompt_id: {prompt_id}")
 
-            max_attempts = timeout  # Use timeout from config
-            for _ in range(max_attempts):
+            while True:
                 history = requests.get(f"{self.base_url}/history/{prompt_id}").json()
                 if history.get(prompt_id):
                     outputs = history[prompt_id]["outputs"]
@@ -219,7 +223,6 @@ class ComfyUIClient:
                     logger.info(f"Generated video URL: {video_url}")
                     return video_url
                 time.sleep(1)
-            raise Exception(f"Video workflow {prompt_id} didn't complete within {max_attempts} seconds")
 
         except FileNotFoundError:
             raise Exception(f"Workflow file '{workflow_file}' not found")
