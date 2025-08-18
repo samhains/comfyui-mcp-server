@@ -119,6 +119,13 @@
         "width": ["143", "value"],
         "height": ["144", "value"]
       },
+      "output_node": {
+        "node_id": "125",
+        "class_type": "VHS_VideoCombine",
+        "title": "SAVE_VIDEO",
+        "output_type": "video",
+        "format": "video/h264-mp4"
+      },
       "notes": [
         "This workflow combines Flux Redux (3-image style conditioning) + WAN 2.2 I2V + MMAudio",
         "Images are downloaded from URLs and stored locally during processing",
