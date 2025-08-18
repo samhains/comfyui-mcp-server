@@ -102,8 +102,7 @@ def generate_image(params: str) -> dict:
             width=width,
             height=height,
             workflow_id=workflow_id,
-            model=model,
-            timeout=config["timeouts"]["image_generation"]
+            model=model
         )
         logger.info(f"Returning image URL: {image_url}")
         return {"image_url": image_url}
@@ -155,11 +154,76 @@ def generate_video(params: str) -> dict:
             height=height,
             audio_prompt=audio_prompt,
             frame_length=frame_length,
-            workflow_id=workflow_id,
-            timeout=config["timeouts"]["video_generation"]
+            workflow_id=workflow_id
         )
         logger.info(f"Returning video URL: {video_url}")
         return {"video_url": video_url}
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
+# Define the 3-image video generation tool
+@mcp.tool()
+def generate_3_image_video(params: str) -> dict:
+    """Generate a video using 3 input images with Flux Redux and WAN 2.2 I2V workflow through ComfyUI
+    
+    Args:
+        params: JSON string containing:
+            - image1_url (required): URL to the first reference image for style conditioning
+            - image2_url (required): URL to the second reference image for style conditioning  
+            - image3_url (required): URL to the third reference image for style conditioning
+            - prompt (optional): Text description for video generation. Auto-generated if not provided.
+            - audio_prompt (optional): Text description of audio/sound. Auto-generated if not provided.
+            - frame_length (optional): Number of frames for the video
+            - width (optional): Video width in pixels  
+            - height (optional): Video height in pixels
+    
+    Returns:
+        dict: Contains 'video_url' on success or 'error' on failure
+        
+    Example params: '{"image1_url": "https://storage.supabase.co/bucket/img1.jpg", "image2_url": "https://storage.supabase.co/bucket/img2.jpg", "image3_url": "https://storage.supabase.co/bucket/img3.jpg", "prompt": "Dynamic scene with character movement", "audio_prompt": "Upbeat electronic music with ambient effects"}'
+    """
+    logger.info(f"Received 3-image video request with params: {params}")
+    try:
+        param_dict = json.loads(params)
+        
+        # Required parameters
+        image1_url = param_dict["image1_url"]
+        image2_url = param_dict["image2_url"]  
+        image3_url = param_dict["image3_url"]
+        
+        # Optional parameters
+        prompt = param_dict.get("prompt")
+        audio_prompt = param_dict.get("audio_prompt")
+        frame_length = param_dict.get("frame_length")
+        
+        # Get settings from tools definition and config
+        tool_config = tools["generate_3_image_video"]
+        
+        # Use provided resolution or fall back to workflow defaults
+        width = param_dict.get("width")
+        height = param_dict.get("height")
+        
+        # Use global comfyui_client
+        video_url = comfyui_client.generate_3_image_video(
+            image1_url=image1_url,
+            image2_url=image2_url,
+            image3_url=image3_url,
+            prompt=prompt,
+            audio_prompt=audio_prompt,
+            width=width,
+            height=height,
+            frame_length=frame_length
+        )
+        
+        logger.info(f"Returning 3-image video URL: {video_url}")
+        return {"video_url": video_url}
+        
+    except KeyError as e:
+        missing_param = str(e).strip("'")
+        error_msg = f"Missing required parameter: {missing_param}"
+        logger.error(error_msg)
+        return {"error": error_msg}
     except Exception as e:
         logger.error(f"Error: {e}")
         return {"error": str(e)}
@@ -217,6 +281,17 @@ async def generate_video_http(params: dict):
     logger.info(f"Received HTTP video request with params: {params}")
     try:
         result = generate_video(json.dumps(params))
+        return result
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
+@app.post("/generate_3_image_video")
+async def generate_3_image_video_http(params: dict):
+    """HTTP endpoint for 3-image video generation"""
+    logger.info(f"Received HTTP 3-image video request with params: {params}")
+    try:
+        result = generate_3_image_video(json.dumps(params))
         return result
     except Exception as e:
         logger.error(f"Error: {e}")
