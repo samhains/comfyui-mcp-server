@@ -72,21 +72,21 @@ mcp = FastMCP("ComfyUI_MCP_Server", lifespan=app_lifespan)
 
 # Define the image generation tool
 @mcp.tool()
-def generate_image(params: str) -> dict:
+def generate_image(params: dict) -> dict:
     """Generate an image using ComfyUI
     
     Args:
-        params: JSON string containing:
+        params: Dictionary containing:
             - prompt (required): Text description of the image to generate
     
     Returns:
         dict: Contains 'image_url' on success or 'error' on failure
         
-    Example params: '{"prompt": "anime girl in armor"}'
+    Example params: {"prompt": "anime girl in armor"}
     """
     logger.info(f"Received request with params: {params}")
     try:
-        param_dict = json.loads(params)
+        param_dict = params
         prompt = param_dict["prompt"]
         
         # Get settings from tools definition and config
@@ -112,11 +112,11 @@ def generate_image(params: str) -> dict:
 
 # Define the video generation tool
 @mcp.tool()
-def generate_video(params: str) -> dict:
+def generate_video(params: dict) -> dict:
     """Generate a video using ComfyUI with WAN 2.2 T2V model
     
     Args:
-        params: JSON string containing:
+        params: Dictionary containing:
             - prompt (required): Text description of the video to generate
             - audio_prompt (optional): Text description of the audio/sound to generate
             - frame_length (optional): Number of frames for the video
@@ -126,11 +126,11 @@ def generate_video(params: str) -> dict:
     Returns:
         dict: Contains 'video_url' on success or 'error' on failure
         
-    Example params: '{"prompt": "a cat walking in a garden", "width": 1920, "height": 1080}'
+    Example params: {"prompt": "a cat walking in a garden", "width": 1920, "height": 1080}
     """
     logger.info(f"Received video request with params: {params}")
     try:
-        param_dict = json.loads(params)
+        param_dict = params
         prompt = param_dict["prompt"]
         audio_prompt = param_dict.get("audio_prompt")
         frame_length = param_dict.get("frame_length")
@@ -164,16 +164,14 @@ def generate_video(params: str) -> dict:
 
 # Define the 3-image video generation tool
 @mcp.tool()
-def generate_3_image_video(params: str) -> dict:
+def generate_3_image_video(params: dict) -> dict:
     """Generate a video using 3 input images with Flux Redux and WAN 2.2 I2V workflow through ComfyUI
     
     Args:
-        params: JSON string containing:
+        params: Dictionary containing:
             - image1_url (required): URL to the first reference image for style conditioning
             - image2_url (required): URL to the second reference image for style conditioning  
             - image3_url (required): URL to the third reference image for style conditioning
-            - prompt (optional): Text description for video generation. Auto-generated if not provided.
-            - audio_prompt (optional): Text description of audio/sound. Auto-generated if not provided.
             - frame_length (optional): Number of frames for the video
             - width (optional): Video width in pixels  
             - height (optional): Video height in pixels
@@ -181,11 +179,11 @@ def generate_3_image_video(params: str) -> dict:
     Returns:
         dict: Contains 'video_url' on success or 'error' on failure
         
-    Example params: '{"image1_url": "https://storage.supabase.co/bucket/img1.jpg", "image2_url": "https://storage.supabase.co/bucket/img2.jpg", "image3_url": "https://storage.supabase.co/bucket/img3.jpg", "prompt": "Dynamic scene with character movement", "audio_prompt": "Upbeat electronic music with ambient effects"}'
+    Example params: {"image1_url": "https://storage.supabase.co/bucket/img1.jpg", "image2_url": "https://storage.supabase.co/bucket/img2.jpg", "image3_url": "https://storage.supabase.co/bucket/img3.jpg", "width": 1920, "height": 1080}
     """
     logger.info(f"Received 3-image video request with params: {params}")
     try:
-        param_dict = json.loads(params)
+        param_dict = params
         
         # Required parameters
         image1_url = param_dict["image1_url"]
@@ -193,8 +191,6 @@ def generate_3_image_video(params: str) -> dict:
         image3_url = param_dict["image3_url"]
         
         # Optional parameters
-        prompt = param_dict.get("prompt")
-        audio_prompt = param_dict.get("audio_prompt")
         frame_length = param_dict.get("frame_length")
         
         # Get settings from tools definition and config
@@ -209,8 +205,6 @@ def generate_3_image_video(params: str) -> dict:
             image1_url=image1_url,
             image2_url=image2_url,
             image3_url=image3_url,
-            prompt=prompt,
-            audio_prompt=audio_prompt,
             width=width,
             height=height,
             frame_length=frame_length
@@ -236,7 +230,7 @@ async def generate_image_http(params: dict):
     """HTTP endpoint for image generation"""
     logger.info(f"Received HTTP request with params: {params}")
     try:
-        result = generate_image(json.dumps(params))
+        result = generate_image(params)
         return result
     except Exception as e:
         logger.error(f"Error: {e}")
@@ -253,7 +247,7 @@ async def generate_image_stream(params: dict):
             yield f"data: {json.dumps({'status': 'starting', 'message': 'Initializing image generation...'})}\n\n"
             
             # Generate image (this will still use polling internally)
-            result = generate_image(json.dumps(params))
+            result = generate_image(params)
             
             # Send progress updates (can be enhanced to show actual ComfyUI progress)
             yield f"data: {json.dumps({'status': 'processing', 'message': 'Generating image...'})}\n\n"
@@ -280,7 +274,7 @@ async def generate_video_http(params: dict):
     """HTTP endpoint for video generation"""
     logger.info(f"Received HTTP video request with params: {params}")
     try:
-        result = generate_video(json.dumps(params))
+        result = generate_video(params)
         return result
     except Exception as e:
         logger.error(f"Error: {e}")
@@ -291,7 +285,7 @@ async def generate_3_image_video_http(params: dict):
     """HTTP endpoint for 3-image video generation"""
     logger.info(f"Received HTTP 3-image video request with params: {params}")
     try:
-        result = generate_3_image_video(json.dumps(params))
+        result = generate_3_image_video(params)
         return result
     except Exception as e:
         logger.error(f"Error: {e}")
@@ -308,7 +302,7 @@ async def generate_video_stream(params: dict):
             yield f"data: {json.dumps({'status': 'starting', 'message': 'Initializing video generation...'})}\n\n"
             
             # Generate video (this will still use polling internally)
-            result = generate_video(json.dumps(params))
+            result = generate_video(params)
             
             # Send progress updates
             yield f"data: {json.dumps({'status': 'processing', 'message': 'Generating video with WAN 2.2...'})}\n\n"

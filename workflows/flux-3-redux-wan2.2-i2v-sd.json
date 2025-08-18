@@ -264,7 +264,7 @@
       ],
       "steps": 50,
       "cfg": 4.5,
-      "seed": 57098298389626,
+      "seed": 855394697552323,
       "prompt": [
         "234",
         0
@@ -367,7 +367,7 @@
   },
   "145": {
     "inputs": {
-      "value": 150
+      "value": 180
     },
     "class_type": "PrimitiveInt",
     "_meta": {
@@ -452,7 +452,7 @@
   },
   "174": {
     "inputs": {
-      "seed": 159478362622740
+      "seed": 1079955028680999
     },
     "class_type": "Seed Everywhere",
     "_meta": {
@@ -546,7 +546,7 @@
   },
   "204": {
     "inputs": {
-      "noise_seed": 512710937444252
+      "noise_seed": 643467875793462
     },
     "class_type": "RandomNoise",
     "_meta": {
@@ -690,7 +690,7 @@
   },
   "215": {
     "inputs": {
-      "image": "astrolane_image3.jpg"
+      "image": "Clipboard - 2024-08-16 21.21.38.png"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -764,7 +764,7 @@
   },
   "224": {
     "inputs": {
-      "image": "astrolane_profilelarge.jpg"
+      "image": "@ihatecigs (2).jpg"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -790,7 +790,7 @@
   },
   "226": {
     "inputs": {
-      "image": "Pre-Rendered Backgrounds Aesthetics on X Math Blaster Episode 2 -.jpg"
+      "image": "Parker Ito and Dean Kissick - by Tom - Art of Conversation (3).jpg"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -847,13 +847,13 @@
   },
   "230": {
     "inputs": {
-      "text": "Image a scene for this image. Do not describe image, but rather. Imagine how this image would change as a video. Describe for text and image to video for Wan 2.2. Print only prompt.\n",
+      "text": "Image a scene for this image. Do not describe image, but rather. Imagine how this image would change as a video. Describe for text and image to video for Wan 2.2. Print only prompt. Prefer JSON output. \n",
       "model": "Qwen2.5-VL-3B-Instruct",
       "quantization": "none",
       "keep_model_loaded": false,
       "temperature": 0.7,
       "max_new_tokens": 512,
-      "seed": 9,
+      "seed": 1004,
       "video_path": "",
       "image": [
         "212",
@@ -873,7 +873,7 @@
       "keep_model_loaded": false,
       "temperature": 0.7,
       "max_new_tokens": 512,
-      "seed": 13,
+      "seed": 488,
       "video_path": "",
       "image": [
         "212",
@@ -887,7 +887,7 @@
   },
   "236": {
     "inputs": {
-      "text_undefined": "As the video progresses, the scene transitions from a static, still image to a dynamic, animated sequence. The character in the red dress begins to move, stepping forward with a confident stride. The background elements, including the colorful platforms and the alien figure, start to come to life, appearing to react to the character's movement. The environment becomes more vibrant and interactive, with the platforms shifting slightly and the alien figure becoming more animated. The lighting changes subtly, creating a sense of depth and atmosphere. The overall scene becomes more engaging and immersive, capturing the essence of a lively, animated video game environment.",
+      "text_0": "```json\n{\n  \"prompt\": \"As the video progresses, the tree begins to come to life, its branches swaying gently in the breeze. The eyes of the tree open wider, revealing a deep red glow that illuminates the surrounding landscape. The trunk starts to move, as if breathing, and the roots spread out, reaching towards the ground. The background transitions from a serene sunset to a mystical, otherworldly atmosphere with swirling clouds and glowing lights. The stone monument and bamboo sticks remain static throughout, serving as silent witnesses to the transformation.\"\n}\n```",
       "text": [
         "230",
         0
@@ -900,7 +900,7 @@
   },
   "237": {
     "inputs": {
-      "text_undefined": "The audio environment is vibrant and dynamic, with a mix of playful and whimsical sounds. The character's movements create a rhythmic clacking sound as they navigate the platform. The background features a cheerful, upbeat melody that complements the scene. There are soft, tinkling sounds from the platforms and the character's interactions with them. The distant, alien-like figure adds an eerie, slightly unsettling sound to the mix. Overall, the soundscape is lively and engaging, capturing the essence of a fun, imaginative adventure.",
+      "text_0": "The audio environment in this scene is serene yet eerie. The background features a soft, gentle breeze rustling through the tree's leaves, creating a soothing sound. The distant mountains and sky evoke a sense of calm, with occasional whispers of wind carrying distant sounds. The stone structure and bamboo poles add to the ambiance with subtle, rhythmic movements. The overall atmosphere is one of quiet contemplation, with occasional distant animal calls or bird songs breaking the silence.",
       "text": [
         "234",
         0
@@ -909,6 +909,15 @@
     "class_type": "ShowText|pysssss",
     "_meta": {
       "title": "Show Text 🐍"
+    }
+  },
+  "241": {
+    "inputs": {
+      "image": "ComfyUI_00098_.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
     }
   }
 }

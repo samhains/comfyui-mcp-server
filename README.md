@@ -1,13 +1,27 @@
 # ComfyUI MCP Server
 
-A lightweight Python-based MCP (Model Context Protocol) server that interfaces with a local [ComfyUI](https://github.com/comfyanonymous/ComfyUI) instance to generate images programmatically via AI agent requests.
+A lightweight Python-based MCP (Model Context Protocol) server that interfaces with a local [ComfyUI](https://github.com/comfyanonymous/ComfyUI) instance to generate images and videos programmatically via AI agent requests.
 
 ## Overview
 
-This project enables AI agents to send image generation requests to ComfyUI using the MCP protocol over WebSocket. It supports:
-- Fixed workflow selection (`flux-dev-workflow.json`).
-- Dynamic parameters: `prompt`, `width`, and `height` (defaults to 1024x1024).
-- Returns image URLs served by ComfyUI.
+This project enables AI agents to send generation requests to ComfyUI using the MCP protocol. It supports:
+
+### 🎨 Image Generation
+- **Tool**: `generate_image`
+- **Workflow**: `flux-dev-workflow` (Flux 1.0 Dev model)
+- **Parameters**: `prompt`, `width`, `height`
+
+### 🎬 Video Generation  
+- **Tool**: `generate_video`
+- **Workflow**: `wan2.2-t2v-sd` (WAN 2.2 Text-to-Video + MMAudio)
+- **Parameters**: `prompt`, `audio_prompt`, `frame_length`, `width`, `height`
+
+### 🎭 3-Image Style Video Generation
+- **Tool**: `generate_3_image_video`
+- **Workflow**: `flux-3-redux-wan2.2-i2v-sd` (Flux Redux + WAN 2.2 I2V + MMAudio)
+- **Parameters**: `image1_url`, `image2_url`, `image3_url`, `prompt`, `audio_prompt`, `frame_length`, `width`, `height`
+
+All tools support both MCP protocol and HTTP API endpoints.
 
 ## Prerequisites
 
@@ -40,34 +54,54 @@ This project enables AI agents to send image generation requests to ComfyUI usin
 
 ## Usage
 
-1. **Run the MCP Server**:
-   python server.py
+### MCP Server Mode
+```bash
+python server.py
+```
+Runs the MCP server for use with MCP-compatible clients.
 
-- Listens on `ws://localhost:9000`.
+### HTTP API Mode  
+```bash
+python server.py --http
+```
+Starts HTTP server on `http://localhost:9000` with these endpoints:
 
-2. **Test with the Client**:
-   python client.py
+- `POST /generate_image` - Image generation
+- `POST /generate_video` - Video generation  
+- `POST /generate_3_image_video` - 3-image style video generation
+- `POST /generate_image_stream` - Streaming image generation (SSE)
+- `POST /generate_video_stream` - Streaming video generation (SSE)
+- `GET /health` - Health check
 
-- Sends a sample request: `"a dog wearing sunglasses"` using the hardcoded flux-dev workflow.
-- Output example:
-  ```
-  Response from server:
-  {
-    "image_url": "http://localhost:8188/view?filename=ComfyUI_00001_.png&subfolder=&type=output"
-  }
-  ```
+### Example HTTP Requests
 
-3. **Custom Requests**:
-- Modify `client.py`'s `payload` to change `prompt`, `width`, and `height` parameters.
-- Example:
-  ```
-  "params": json.dumps({
-      "prompt": "a cat in space",
-      "width": 768,
-      "height": 1024
-  })
-  ```
-- If width/height are omitted, they default to 1024x1024.
+**Image Generation:**
+```bash
+curl -X POST http://localhost:9000/generate_image \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "a cat in space", "width": 1024, "height": 1024}'
+```
+
+**Video Generation:**
+```bash
+curl -X POST http://localhost:9000/generate_video \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "a cat walking in a garden", "audio_prompt": "birds chirping"}'
+```
+
+**3-Image Video Generation:**
+```bash
+curl -X POST http://localhost:9000/generate_3_image_video \
+  -H "Content-Type: application/json" \
+  -d '{
+    "image1_url": "https://example.com/img1.jpg",
+    "image2_url": "https://example.com/img2.jpg", 
+    "image3_url": "https://example.com/img3.jpg",
+    "width": 1920,
+    "height": 1080,
+    "frame_length": 150
+  }'
+```
 
 ## Project Structure
 
@@ -76,16 +110,27 @@ This project enables AI agents to send image generation requests to ComfyUI usin
 - `client.py`: Test client for sending MCP requests.
 - `workflows/`: Directory for API-format workflow JSON files.
 
-## Notes
+## Recent Fixes (2025-08-18)
 
-- The workflow uses `flux1-dev-fp8.safetensors` model which must exist in `<ComfyUI_dir>/models/checkpoints/`.
-- The MCP SDK lacks native WebSocket transport; this uses a custom implementation.
-- Model and other workflow parameters are hardcoded in the `flux-dev-workflow.json` file, except for prompt, width, and height which can be customized.
-- Successfully tested with anime-style image generation including Golden Boy art style characters.
+🔧 **Fixed `generate_3_image_video` Output Node Issue**
+- **Problem**: ComfyUI workflow was completing but not returning video files due to missing output node configuration
+- **Error**: `"No output node with video found: {'173': {'value': [4.0]}}"`
+- **Solution**: Added explicit output configuration to `flux-3-redux-wan2.2-i2v-sd.json` workflow to mark node "125" (VHS_VideoCombine/SAVE_VIDEO) as an output node
+- **Result**: The 3-image video generation tool now properly saves and returns MP4 files
 
-## Planned Features
+## Configuration
 
-- **Video Generation**: `generate_video_from_image` functionality to create videos from generated or uploaded images.
+The server uses `config.json` and `tools.json` for configuration:
+- **config.json**: ComfyUI server settings, resolutions, and general parameters
+- **tools.json**: Tool definitions, workflow mappings, and parameter specifications
+
+## Required Models
+
+Ensure these models are installed in your ComfyUI `models/` directory:
+- **Checkpoints**: `flux1-dev-fp8.safetensors`
+- **CLIP**: `umt5_xxl_fp8_e4m3fn_scaled.safetensors` 
+- **WAN Models**: WAN 2.2 text-to-video and image-to-video models
+- **MMAudio**: Audio generation models for video soundtracks
 
 ## Contributing
 

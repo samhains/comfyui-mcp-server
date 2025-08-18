@@ -94,16 +94,6 @@
           "type": "string",
           "description": "URL to the third reference image. This image will be used as additional style conditioning for Flux Redux. Must be a valid HTTP/HTTPS URL pointing to an image file (JPG, PNG, etc.)."
         },
-        "prompt": {
-          "required": false,
-          "type": "string",
-          "description": "Text description for video generation. If not provided, the workflow will use Qwen2.5VL to automatically generate a motion prompt based on the generated image. For best results, describe the motion and scene changes you want to see in the video."
-        },
-        "audio_prompt": {
-          "required": false,
-          "type": "string",
-          "description": "Text description of the audio/sound to generate for the video using MMAudio. If not provided, the workflow will use Qwen2.5VL to automatically generate an audio prompt based on the generated image. Describe the soundscape, ambient noises, and sound effects you want."
-        },
         "frame_length": {
           "required": false,
           "type": "integer",
@@ -125,8 +115,6 @@
         "image1_url": ["226", "image"],
         "image2_url": ["215", "image"],
         "image3_url": ["224", "image"],
-        "prompt": ["227", "text"],
-        "audio_prompt": ["234", "text"],
         "frame_length": ["145", "value"],
         "width": ["143", "value"],
         "height": ["144", "value"]
