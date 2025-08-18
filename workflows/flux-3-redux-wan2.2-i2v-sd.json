@@ -1,0 +1,914 @@
+{
+  "90": {
+    "inputs": {
+      "clip_name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "type": "wan",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "91": {
+    "inputs": {
+      "text": "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走",
+      "clip": [
+        "90",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Negative Prompt)"
+    }
+  },
+  "92": {
+    "inputs": {
+      "vae_name": "wan_2.1_vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "93": {
+    "inputs": {
+      "shift": 4,
+      "model": [
+        "111",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingSD3",
+    "_meta": {
+      "title": "ModelSamplingSD3"
+    }
+  },
+  "95": {
+    "inputs": {
+      "add_noise": "disable",
+      "noise_seed": [
+        "174",
+        0
+      ],
+      "steps": [
+        "172",
+        0
+      ],
+      "cfg": 3.5,
+      "sampler_name": "euler",
+      "scheduler": "beta",
+      "start_at_step": [
+        "173",
+        0
+      ],
+      "end_at_step": 10000,
+      "return_with_leftover_noise": "disable",
+      "model": [
+        "140",
+        0
+      ],
+      "positive": [
+        "176",
+        0
+      ],
+      "negative": [
+        "176",
+        1
+      ],
+      "latent_image": [
+        "96",
+        0
+      ]
+    },
+    "class_type": "KSamplerAdvanced",
+    "_meta": {
+      "title": "KSampler (Advanced)"
+    }
+  },
+  "96": {
+    "inputs": {
+      "add_noise": "enable",
+      "noise_seed": [
+        "174",
+        0
+      ],
+      "steps": [
+        "172",
+        0
+      ],
+      "cfg": 3.5,
+      "sampler_name": "euler",
+      "scheduler": "beta",
+      "start_at_step": 0,
+      "end_at_step": [
+        "173",
+        0
+      ],
+      "return_with_leftover_noise": "enable",
+      "model": [
+        "93",
+        0
+      ],
+      "positive": [
+        "176",
+        0
+      ],
+      "negative": [
+        "176",
+        1
+      ],
+      "latent_image": [
+        "176",
+        2
+      ]
+    },
+    "class_type": "KSamplerAdvanced",
+    "_meta": {
+      "title": "KSampler (Advanced)"
+    }
+  },
+  "97": {
+    "inputs": {
+      "samples": [
+        "95",
+        0
+      ],
+      "vae": [
+        "92",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "99": {
+    "inputs": {
+      "text": [
+        "230",
+        0
+      ],
+      "clip": [
+        "90",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "101": {
+    "inputs": {
+      "unet_name": "wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors",
+      "weight_dtype": "fp8_e4m3fn_fast"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "102": {
+    "inputs": {
+      "unet_name": "wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors",
+      "weight_dtype": "fp8_e4m3fn_fast"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "110": {
+    "inputs": {
+      "sage_attention": "auto",
+      "model": [
+        "101",
+        0
+      ]
+    },
+    "class_type": "PathchSageAttentionKJ",
+    "_meta": {
+      "title": "Patch Sage Attention KJ"
+    }
+  },
+  "111": {
+    "inputs": {
+      "enable_fp16_accumulation": true,
+      "model": [
+        "110",
+        0
+      ]
+    },
+    "class_type": "ModelPatchTorchSettings",
+    "_meta": {
+      "title": "Model Patch Torch Settings"
+    }
+  },
+  "112": {
+    "inputs": {
+      "sage_attention": "auto",
+      "model": [
+        "102",
+        0
+      ]
+    },
+    "class_type": "PathchSageAttentionKJ",
+    "_meta": {
+      "title": "Patch Sage Attention KJ"
+    }
+  },
+  "113": {
+    "inputs": {
+      "enable_fp16_accumulation": true,
+      "model": [
+        "112",
+        0
+      ]
+    },
+    "class_type": "ModelPatchTorchSettings",
+    "_meta": {
+      "title": "Model Patch Torch Settings"
+    }
+  },
+  "115": {
+    "inputs": {
+      "mmaudio_model": "mmaudio_large_44k_v2_fp32.safetensors",
+      "base_precision": "fp32"
+    },
+    "class_type": "MMAudioModelLoader",
+    "_meta": {
+      "title": "MMAudio ModelLoader"
+    }
+  },
+  "116": {
+    "inputs": {
+      "vae_model": "mmaudio_vae_44k_fp32.safetensors",
+      "synchformer_model": "mmaudio_synchformer_fp32.safetensors",
+      "clip_model": "apple_DFN5B-CLIP-ViT-H-14-384_fp32.safetensors",
+      "mode": "44k",
+      "precision": "fp32"
+    },
+    "class_type": "MMAudioFeatureUtilsLoader",
+    "_meta": {
+      "title": "MMAudio FeatureUtilsLoader"
+    }
+  },
+  "117": {
+    "inputs": {
+      "duration": [
+        "165",
+        0
+      ],
+      "steps": 50,
+      "cfg": 4.5,
+      "seed": 57098298389626,
+      "prompt": [
+        "234",
+        0
+      ],
+      "negative_prompt": "",
+      "mask_away_clip": false,
+      "force_offload": false,
+      "mmaudio_model": [
+        "115",
+        0
+      ],
+      "feature_utils": [
+        "116",
+        0
+      ],
+      "images": [
+        "121",
+        0
+      ]
+    },
+    "class_type": "MMAudioSampler",
+    "_meta": {
+      "title": "MMAudio Sampler"
+    }
+  },
+  "121": {
+    "inputs": {
+      "ckpt_name": "rife49.pth",
+      "clear_cache_after_n_frames": 10,
+      "multiplier": 2,
+      "fast_mode": true,
+      "ensemble": true,
+      "scale_factor": 1,
+      "frames": [
+        "97",
+        0
+      ]
+    },
+    "class_type": "RIFE VFI",
+    "_meta": {
+      "title": "RIFE VFI (recommend rife47 and rife49)"
+    }
+  },
+  "125": {
+    "inputs": {
+      "frame_rate": 32,
+      "loop_count": 0,
+      "filename_prefix": "wan_video_T2V",
+      "format": "video/h264-mp4",
+      "pix_fmt": "yuv420p",
+      "crf": 19,
+      "save_metadata": true,
+      "trim_to_audio": false,
+      "pingpong": false,
+      "save_output": true,
+      "images": [
+        "121",
+        0
+      ],
+      "audio": [
+        "117",
+        0
+      ]
+    },
+    "class_type": "VHS_VideoCombine",
+    "_meta": {
+      "title": "SAVE_VIDEO"
+    }
+  },
+  "140": {
+    "inputs": {
+      "shift": 4,
+      "model": [
+        "171",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingSD3",
+    "_meta": {
+      "title": "ModelSamplingSD3"
+    }
+  },
+  "143": {
+    "inputs": {
+      "value": 1280
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "@WIDTH"
+    }
+  },
+  "144": {
+    "inputs": {
+      "value": 720
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "@HEIGHT"
+    }
+  },
+  "145": {
+    "inputs": {
+      "value": 150
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "@FRAME_LENGTH"
+    }
+  },
+  "161": {
+    "inputs": {
+      "op": "Sub",
+      "a": [
+        "163",
+        0
+      ],
+      "b": 1
+    },
+    "class_type": "CM_FloatBinaryOperation",
+    "_meta": {
+      "title": "FloatBinaryOperation"
+    }
+  },
+  "163": {
+    "inputs": {
+      "a": [
+        "145",
+        0
+      ]
+    },
+    "class_type": "CM_IntToFloat",
+    "_meta": {
+      "title": "IntToFloat"
+    }
+  },
+  "165": {
+    "inputs": {
+      "op": "Div",
+      "a": [
+        "161",
+        0
+      ],
+      "b": 16
+    },
+    "class_type": "CM_FloatBinaryOperation",
+    "_meta": {
+      "title": "FloatBinaryOperation"
+    }
+  },
+  "171": {
+    "inputs": {
+      "lora_name": "lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors",
+      "strength_model": 0.5,
+      "model": [
+        "113",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "LoraLoaderModelOnly"
+    }
+  },
+  "172": {
+    "inputs": {
+      "value": 8
+    },
+    "class_type": "Int",
+    "_meta": {
+      "title": "Steps"
+    }
+  },
+  "173": {
+    "inputs": {
+      "expression": "a / 2",
+      "a": [
+        "172",
+        0
+      ]
+    },
+    "class_type": "MathExpression|pysssss",
+    "_meta": {
+      "title": "Math Expression 🐍"
+    }
+  },
+  "174": {
+    "inputs": {
+      "seed": 159478362622740
+    },
+    "class_type": "Seed Everywhere",
+    "_meta": {
+      "title": "Seed Everywhere"
+    }
+  },
+  "176": {
+    "inputs": {
+      "width": [
+        "143",
+        0
+      ],
+      "height": [
+        "144",
+        0
+      ],
+      "length": 81,
+      "batch_size": 1,
+      "positive": [
+        "99",
+        0
+      ],
+      "negative": [
+        "91",
+        0
+      ],
+      "vae": [
+        "92",
+        0
+      ],
+      "start_image": [
+        "212",
+        0
+      ]
+    },
+    "class_type": "WanImageToVideo",
+    "_meta": {
+      "title": "WanImageToVideo"
+    }
+  },
+  "200": {
+    "inputs": {
+      "width": 1280,
+      "height": 720,
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "EmptySD3LatentImage"
+    }
+  },
+  "201": {
+    "inputs": {
+      "max_shift": 1.15,
+      "base_shift": 0.5,
+      "width": 1280,
+      "height": 720,
+      "model": [
+        "207",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingFlux",
+    "_meta": {
+      "title": "ModelSamplingFlux"
+    }
+  },
+  "202": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "203": {
+    "inputs": {
+      "scheduler": "simple",
+      "steps": 20,
+      "denoise": 1,
+      "model": [
+        "201",
+        0
+      ]
+    },
+    "class_type": "BasicScheduler",
+    "_meta": {
+      "title": "BasicScheduler"
+    }
+  },
+  "204": {
+    "inputs": {
+      "noise_seed": 512710937444252
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "RandomNoise"
+    }
+  },
+  "205": {
+    "inputs": {
+      "strength": 1,
+      "strength_type": "multiply",
+      "conditioning": [
+        "206",
+        0
+      ],
+      "style_model": [
+        "210",
+        0
+      ],
+      "clip_vision_output": [
+        "218",
+        0
+      ]
+    },
+    "class_type": "StyleModelApply",
+    "_meta": {
+      "title": "Apply Style Model"
+    }
+  },
+  "206": {
+    "inputs": {
+      "guidance": 3.5,
+      "conditioning": [
+        "227",
+        0
+      ]
+    },
+    "class_type": "FluxGuidance",
+    "_meta": {
+      "title": "FluxGuidance"
+    }
+  },
+  "207": {
+    "inputs": {
+      "unet_name": "flux1-dev.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "208": {
+    "inputs": {
+      "clip_name1": "t5xxl_fp16.safetensors",
+      "clip_name2": "clip_l.safetensors",
+      "type": "flux",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": {
+      "title": "DualCLIPLoader"
+    }
+  },
+  "209": {
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "210": {
+    "inputs": {
+      "style_model_name": "flux1-redux-dev.safetensors"
+    },
+    "class_type": "StyleModelLoader",
+    "_meta": {
+      "title": "Load Style Model"
+    }
+  },
+  "211": {
+    "inputs": {
+      "noise": [
+        "204",
+        0
+      ],
+      "guider": [
+        "214",
+        0
+      ],
+      "sampler": [
+        "202",
+        0
+      ],
+      "sigmas": [
+        "203",
+        0
+      ],
+      "latent_image": [
+        "200",
+        0
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "212": {
+    "inputs": {
+      "samples": [
+        "211",
+        0
+      ],
+      "vae": [
+        "209",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "214": {
+    "inputs": {
+      "model": [
+        "201",
+        0
+      ],
+      "conditioning": [
+        "228",
+        0
+      ]
+    },
+    "class_type": "BasicGuider",
+    "_meta": {
+      "title": "BasicGuider"
+    }
+  },
+  "215": {
+    "inputs": {
+      "image": "astrolane_image3.jpg"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "@IMAGE_2"
+    }
+  },
+  "217": {
+    "inputs": {
+      "strength": 1,
+      "strength_type": "multiply",
+      "conditioning": [
+        "205",
+        0
+      ],
+      "style_model": [
+        "210",
+        0
+      ],
+      "clip_vision_output": [
+        "223",
+        0
+      ]
+    },
+    "class_type": "StyleModelApply",
+    "_meta": {
+      "title": "Apply Style Model"
+    }
+  },
+  "218": {
+    "inputs": {
+      "crop": "center",
+      "clip_vision": [
+        "219",
+        0
+      ],
+      "image": [
+        "226",
+        0
+      ]
+    },
+    "class_type": "CLIPVisionEncode",
+    "_meta": {
+      "title": "CLIP Vision Encode"
+    }
+  },
+  "219": {
+    "inputs": {
+      "clip_name": "sigclip_vision_patch14_384.safetensors"
+    },
+    "class_type": "CLIPVisionLoader",
+    "_meta": {
+      "title": "Load CLIP Vision"
+    }
+  },
+  "223": {
+    "inputs": {
+      "crop": "center",
+      "clip_vision": [
+        "219",
+        0
+      ],
+      "image": [
+        "215",
+        0
+      ]
+    },
+    "class_type": "CLIPVisionEncode",
+    "_meta": {
+      "title": "CLIP Vision Encode"
+    }
+  },
+  "224": {
+    "inputs": {
+      "image": "astrolane_profilelarge.jpg"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "@IMAGE_3"
+    }
+  },
+  "225": {
+    "inputs": {
+      "crop": "center",
+      "clip_vision": [
+        "219",
+        0
+      ],
+      "image": [
+        "224",
+        0
+      ]
+    },
+    "class_type": "CLIPVisionEncode",
+    "_meta": {
+      "title": "CLIP Vision Encode"
+    }
+  },
+  "226": {
+    "inputs": {
+      "image": "Pre-Rendered Backgrounds Aesthetics on X Math Blaster Episode 2 -.jpg"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "@IMAGE_1"
+    }
+  },
+  "227": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "208",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "228": {
+    "inputs": {
+      "strength": 1,
+      "strength_type": "multiply",
+      "conditioning": [
+        "217",
+        0
+      ],
+      "style_model": [
+        "210",
+        0
+      ],
+      "clip_vision_output": [
+        "225",
+        0
+      ]
+    },
+    "class_type": "StyleModelApply",
+    "_meta": {
+      "title": "Apply Style Model"
+    }
+  },
+  "229": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "212",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "230": {
+    "inputs": {
+      "text": "Image a scene for this image. Do not describe image, but rather. Imagine how this image would change as a video. Describe for text and image to video for Wan 2.2. Print only prompt.\n",
+      "model": "Qwen2.5-VL-3B-Instruct",
+      "quantization": "none",
+      "keep_model_loaded": false,
+      "temperature": 0.7,
+      "max_new_tokens": 512,
+      "seed": 9,
+      "video_path": "",
+      "image": [
+        "212",
+        0
+      ]
+    },
+    "class_type": "Qwen2.5VL",
+    "_meta": {
+      "title": "Qwen2.5VL GENERATES MOTION PROMPT"
+    }
+  },
+  "234": {
+    "inputs": {
+      "text": "Imagine the soundscape for this image. Do not describe the image visually, but rather imagine what sounds would emanate from this scene. Describe the audio environment, ambient noises, and sound effects. Print only the audio prompt for MMAUDIO generation.",
+      "model": "Qwen2.5-VL-3B-Instruct",
+      "quantization": "none",
+      "keep_model_loaded": false,
+      "temperature": 0.7,
+      "max_new_tokens": 512,
+      "seed": 13,
+      "video_path": "",
+      "image": [
+        "212",
+        0
+      ]
+    },
+    "class_type": "Qwen2.5VL",
+    "_meta": {
+      "title": "Qwen2.5VL GENERATES AUDIO PROMPT"
+    }
+  },
+  "236": {
+    "inputs": {
+      "text_undefined": "As the video progresses, the scene transitions from a static, still image to a dynamic, animated sequence. The character in the red dress begins to move, stepping forward with a confident stride. The background elements, including the colorful platforms and the alien figure, start to come to life, appearing to react to the character's movement. The environment becomes more vibrant and interactive, with the platforms shifting slightly and the alien figure becoming more animated. The lighting changes subtly, creating a sense of depth and atmosphere. The overall scene becomes more engaging and immersive, capturing the essence of a lively, animated video game environment.",
+      "text": [
+        "230",
+        0
+      ]
+    },
+    "class_type": "ShowText|pysssss",
+    "_meta": {
+      "title": "Show Text 🐍"
+    }
+  },
+  "237": {
+    "inputs": {
+      "text_undefined": "The audio environment is vibrant and dynamic, with a mix of playful and whimsical sounds. The character's movements create a rhythmic clacking sound as they navigate the platform. The background features a cheerful, upbeat melody that complements the scene. There are soft, tinkling sounds from the platforms and the character's interactions with them. The distant, alien-like figure adds an eerie, slightly unsettling sound to the mix. Overall, the soundscape is lively and engaging, capturing the essence of a fun, imaginative adventure.",
+      "text": [
+        "234",
+        0
+      ]
+    },
+    "class_type": "ShowText|pysssss",
+    "_meta": {
+      "title": "Show Text 🐍"
+    }
+  }
+}
