@@ -1,0 +1,105 @@
+{
+  "description": "Tool definitions for ComfyUI MCP Server. Each tool defines how to interact with ComfyUI workflows.",
+  "tools": {
+    "generate_image": {
+      "description": "Generates images using Flux model through ComfyUI",
+      "workflow_id": "flux-dev-workflow",
+      "model": "flux1-dev-fp8.safetensors",
+      "parameters": {
+        "prompt": {
+          "required": true,
+          "type": "string",
+          "description": "Text description of the image to generate"
+        },
+        "width": {
+          "required": false,
+          "type": "integer",
+          "description": "Image width in pixels"
+        },
+        "height": {
+          "required": false,
+          "type": "integer", 
+          "description": "Image height in pixels"
+        }
+      },
+      "workflow_mapping": {
+        "description": "Maps parameters to ComfyUI workflow nodes",
+        "prompt": ["6", "text"],
+        "width": ["27", "width"],
+        "height": ["27", "height"],
+        "model": ["30", "ckpt_name"]
+      }
+    },
+    "generate_video": {
+      "description": "Generates videos using WAN 2.2 T2V workflow through ComfyUI",
+      "workflow_id": "wan2.2-t2v-sd",
+      "parameters": {
+        "prompt": {
+          "required": true,
+          "type": "string",
+          "description": "Text description of the video content to generate"
+        },
+        "audio_prompt": {
+          "required": true,
+          "type": "string",
+          "description": "Text description of the audio/sound to generate for the video"
+        },
+        "frame_length": {
+          "required": false,
+          "type": "integer",
+          "description": "Number of frames for the video. Defaults to config value if not specified."
+        },
+        "width": {
+          "required": false,
+          "type": "integer",
+          "description": "Video width in pixels. Defaults to config value if not specified."
+        },
+        "height": {
+          "required": false,
+          "type": "integer",
+          "description": "Video height in pixels. Defaults to config value if not specified."
+        }
+      },
+      "workflow_mapping": {
+        "description": "Maps parameters to ComfyUI workflow nodes",
+        "prompt": ["141", "value"],
+        "audio_prompt": ["147", "value"],
+        "frame_length": ["145", "value"],
+        "width": ["143", "value"],
+        "height": ["144", "value"]
+      },
+      "notes": [
+        "This workflow generates both video and audio using MMAudio",
+        "The audio prompt is embedded in the workflow itself",
+        "Video includes frame interpolation using RIFE",
+        "Output format is MP4 with embedded audio"
+      ]
+    }
+  },
+  "workflow_files": {
+    "description": "Location of ComfyUI workflow JSON files",
+    "directory": "workflows/",
+    "naming_convention": "{workflow-name}.json",
+    "examples": {
+      "flux-dev-workflow": "workflows/flux-dev-workflow.json",
+      "mmaudio-workflow": "workflows/mmaudio-workflow.json"
+    }
+  },
+  "adding_new_tools": {
+    "description": "Steps to add a new tool/workflow",
+    "steps": [
+      "1. Create workflow JSON file in workflows/ directory",
+      "2. Add tool definition to this file (tools.json)",
+      "3. Define workflow_mapping for parameter routing",
+      "4. Update WORKFLOW_MAPPINGS in comfyui_client.py",
+      "5. Test the integration"
+    ],
+    "workflow_mapping_format": {
+      "description": "Each parameter maps to [node_id, input_key] in workflow JSON",
+      "example": {
+        "prompt": ["6", "text"],
+        "width": ["27", "width"]
+      }
+    }
+  }
+}

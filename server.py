@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import os
 from typing import AsyncIterator
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Response
@@ -13,8 +14,40 @@ from comfyui_client import ComfyUIClient
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("MCP_Server")
 
-# Global ComfyUI client (fallback since context isn't available)
-comfyui_client = ComfyUIClient("http://100.75.77.33:8188")
+# Load configuration
+def load_config():
+    config_path = os.path.join(os.path.dirname(__file__), "config.json")
+    try:
+        with open(config_path, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        logger.error(f"Config file not found at {config_path}")
+        raise
+    except json.JSONDecodeError:
+        logger.error(f"Invalid JSON in config file {config_path}")
+        raise
+
+def load_tools():
+    """Load tool definitions from separate tools file"""
+    config = load_config()
+    tools_file = config.get("tools_file", "tools.json")
+    tools_path = os.path.join(os.path.dirname(__file__), tools_file)
+    try:
+        with open(tools_path, 'r') as f:
+            tools_data = json.load(f)
+            return tools_data.get("tools", {})
+    except FileNotFoundError:
+        logger.error(f"Tools file not found at {tools_path}")
+        raise
+    except json.JSONDecodeError:
+        logger.error(f"Invalid JSON in tools file {tools_path}")
+        raise
+
+config = load_config()
+tools = load_tools()
+
+# Global ComfyUI client using config
+comfyui_client = ComfyUIClient(config["server"]["comfyui_url"])
 
 # Define application context (for future use)
 class AppContext:
@@ -45,22 +78,23 @@ def generate_image(params: str) -> dict:
     Args:
         params: JSON string containing:
             - prompt (required): Text description of the image to generate
-            - width (optional): Image width in pixels, defaults to 1024
-            - height (optional): Image height in pixels, defaults to 1024
     
     Returns:
         dict: Contains 'image_url' on success or 'error' on failure
         
-    Example params: '{"prompt": "anime girl in armor", "width": 512, "height": 768}'
+    Example params: '{"prompt": "anime girl in armor"}'
     """
     logger.info(f"Received request with params: {params}")
     try:
         param_dict = json.loads(params)
         prompt = param_dict["prompt"]
-        width = param_dict.get("width", 1024)  # Default to 1024
-        height = param_dict.get("height", 1024)  # Default to 1024
-        workflow_id = "flux-dev-workflow"  # Always use flux-dev workflow
-        model = "flux1-dev-fp8.safetensors"  # Fixed default model
+        
+        # Get settings from tools definition and config
+        tool_config = tools["generate_image"]
+        width = config["resolutions"]["image_generation"]["width"]
+        height = config["resolutions"]["image_generation"]["height"]
+        workflow_id = tool_config["workflow_id"]
+        model = tool_config["model"]
 
         # Use global comfyui_client (since mcp.context isn't available)
         image_url = comfyui_client.generate_image(
@@ -68,10 +102,64 @@ def generate_image(params: str) -> dict:
             width=width,
             height=height,
             workflow_id=workflow_id,
-            model=model
+            model=model,
+            timeout=config["timeouts"]["image_generation"]
         )
         logger.info(f"Returning image URL: {image_url}")
         return {"image_url": image_url}
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
+# Define the video generation tool
+@mcp.tool()
+def generate_video(params: str) -> dict:
+    """Generate a video using ComfyUI with WAN 2.2 T2V model
+    
+    Args:
+        params: JSON string containing:
+            - prompt (required): Text description of the video to generate
+            - audio_prompt (optional): Text description of the audio/sound to generate
+            - frame_length (optional): Number of frames for the video
+            - width (optional): Video width in pixels
+            - height (optional): Video height in pixels
+    
+    Returns:
+        dict: Contains 'video_url' on success or 'error' on failure
+        
+    Example params: '{"prompt": "a cat walking in a garden", "width": 1920, "height": 1080}'
+    """
+    logger.info(f"Received video request with params: {params}")
+    try:
+        param_dict = json.loads(params)
+        prompt = param_dict["prompt"]
+        audio_prompt = param_dict.get("audio_prompt")
+        frame_length = param_dict.get("frame_length")
+        
+        # Get settings from tools definition and config
+        tool_config = tools["generate_video"]
+        workflow_id = tool_config["workflow_id"]
+        
+        # Use provided resolution or fall back to config values
+        width = param_dict.get("width", config["resolutions"]["video_generation"]["width"])
+        height = param_dict.get("height", config["resolutions"]["video_generation"]["height"])
+        
+        # Use default frame length from config if not provided
+        if frame_length is None:
+            frame_length = config.get("video_generation", {}).get("default_frame_length")
+
+        # Use global comfyui_client
+        video_url = comfyui_client.generate_video(
+            prompt=prompt,
+            width=width,
+            height=height,
+            audio_prompt=audio_prompt,
+            frame_length=frame_length,
+            workflow_id=workflow_id,
+            timeout=config["timeouts"]["video_generation"]
+        )
+        logger.info(f"Returning video URL: {video_url}")
+        return {"video_url": video_url}
     except Exception as e:
         logger.error(f"Error: {e}")
         return {"error": str(e)}
@@ -111,6 +199,50 @@ async def generate_image_stream(params: dict):
             
         except Exception as e:
             logger.error(f"Error in stream: {e}")
+            yield f"data: {json.dumps({'status': 'error', 'error': str(e)})}\n\n"
+    
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+        }
+    )
+
+@app.post("/generate_video")
+async def generate_video_http(params: dict):
+    """HTTP endpoint for video generation"""
+    logger.info(f"Received HTTP video request with params: {params}")
+    try:
+        result = generate_video(json.dumps(params))
+        return result
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
+@app.post("/generate_video_stream")
+async def generate_video_stream(params: dict):
+    """SSE endpoint for streaming video generation progress"""
+    logger.info(f"Received SSE video request with params: {params}")
+    
+    async def event_stream():
+        try:
+            # Send initial status
+            yield f"data: {json.dumps({'status': 'starting', 'message': 'Initializing video generation...'})}\n\n"
+            
+            # Generate video (this will still use polling internally)
+            result = generate_video(json.dumps(params))
+            
+            # Send progress updates
+            yield f"data: {json.dumps({'status': 'processing', 'message': 'Generating video with WAN 2.2...'})}\n\n"
+            
+            # Send final result
+            yield f"data: {json.dumps({'status': 'complete', 'result': result})}\n\n"
+            
+        except Exception as e:
+            logger.error(f"Error in video stream: {e}")
             yield f"data: {json.dumps({'status': 'error', 'error': str(e)})}\n\n"
     
     return StreamingResponse(
