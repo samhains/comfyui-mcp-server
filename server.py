@@ -162,6 +162,58 @@ def generate_video(params: dict) -> dict:
         logger.error(f"Error: {e}")
         return {"error": str(e)}
 
+# Define the remix image tool
+@mcp.tool()
+def remix_image(params: dict) -> dict:
+    """Generate an image using 2 input images with Flux Redux through ComfyUI
+    
+    Args:
+        params: Dictionary containing:
+            - image1_url (required): URL to the first reference image for style conditioning
+            - image2_url (required): URL to the second reference image for style conditioning
+            - width (optional): Image width in pixels
+            - height (optional): Image height in pixels
+    
+    Returns:
+        dict: Contains 'image_url' on success or 'error' on failure
+        
+    Example params: {"image1_url": "https://storage.supabase.co/bucket/img1.jpg", "image2_url": "https://storage.supabase.co/bucket/img2.jpg", "width": 720, "height": 720}
+    """
+    logger.info(f"Received remix image request with params: {params}")
+    try:
+        param_dict = params
+        
+        # Required parameters
+        image1_url = param_dict["image1_url"]
+        image2_url = param_dict["image2_url"]
+        
+        # Optional parameters
+        width = param_dict.get("width")
+        height = param_dict.get("height")
+        
+        # Get settings from tools definition
+        tool_config = tools["remix_image"]
+        
+        # Use global comfyui_client
+        image_url = comfyui_client.remix_image(
+            image1_url=image1_url,
+            image2_url=image2_url,
+            width=width,
+            height=height
+        )
+        
+        logger.info(f"Returning remix image URL: {image_url}")
+        return {"image_url": image_url}
+        
+    except KeyError as e:
+        missing_param = str(e).strip("'")
+        error_msg = f"Missing required parameter: {missing_param}"
+        logger.error(error_msg)
+        return {"error": error_msg}
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
 # Define the 3-image video generation tool
 @mcp.tool()
 def generate_3_image_video(params: dict) -> dict:
@@ -275,6 +327,17 @@ async def generate_video_http(params: dict):
     logger.info(f"Received HTTP video request with params: {params}")
     try:
         result = generate_video(params)
+        return result
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
+@app.post("/remix_image")
+async def remix_image_http(params: dict):
+    """HTTP endpoint for remix image generation"""
+    logger.info(f"Received HTTP remix image request with params: {params}")
+    try:
+        result = remix_image(params)
         return result
     except Exception as e:
         logger.error(f"Error: {e}")

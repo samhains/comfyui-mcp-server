@@ -75,6 +75,51 @@
         "Output format is MP4 with embedded audio"
       ]
     },
+    "remix_image": {
+      "description": "Generates images using 2 input images with Flux Redux style conditioning through ComfyUI",
+      "workflow_id": "flux-2-redux",
+      "parameters": {
+        "image1_url": {
+          "required": true,
+          "type": "string",
+          "description": "URL to the first reference image for style conditioning. Must be a valid HTTP/HTTPS URL pointing to an image file (JPG, PNG, etc.)."
+        },
+        "image2_url": {
+          "required": true,
+          "type": "string",
+          "description": "URL to the second reference image for style conditioning. Must be a valid HTTP/HTTPS URL pointing to an image file (JPG, PNG, etc.)."
+        },
+        "width": {
+          "required": false,
+          "type": "integer",
+          "description": "Image width in pixels. Defaults to 720 if not specified."
+        },
+        "height": {
+          "required": false,
+          "type": "integer",
+          "description": "Image height in pixels. Defaults to 720 if not specified."
+        }
+      },
+      "workflow_mapping": {
+        "description": "Maps parameters to ComfyUI workflow nodes",
+        "image1_url": ["69", "url_or_path"],
+        "image2_url": ["70", "url_or_path"],
+        "width": ["62", "value"],
+        "height": ["65", "value"]
+      },
+      "output_node": {
+        "node_id": "9",
+        "class_type": "SaveImage",
+        "title": "SAVE_IMAGE",
+        "output_type": "image"
+      },
+      "notes": [
+        "This workflow uses Flux Redux for style conditioning with 2 reference images",
+        "Images are downloaded from URLs and processed through CLIP Vision encoding",
+        "The workflow applies dual style conditioning before generating the final image",
+        "Output is a single image that blends styles from both input images"
+      ]
+    },
     "generate_3_image_video": {
       "description": "Generates videos using 3 input images with Flux Redux and WAN 2.2 I2V workflow through ComfyUI. Uses Flux Redux for style conditioning from 3 reference images, then generates video with WAN 2.2 image-to-video and MMAudio for synchronized audio.",
       "workflow_id": "flux-3-redux-wan2.2-i2v-sd",

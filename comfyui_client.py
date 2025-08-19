@@ -58,6 +58,12 @@ WORKFLOW_MAPPINGS = {
         "width": ("143", "value"),
         "height": ("144", "value"),
         "frame_length": ("145", "value")
+    },
+    "flux-2-redux": {
+        "image1_url": ("69", "url_or_path"),
+        "image2_url": ("70", "url_or_path"),
+        "width": ("62", "value"),
+        "height": ("65", "value")
     }
 }
 
@@ -189,6 +195,80 @@ class ComfyUIClient:
             raise Exception(f"Failed to download image from {url}: {e}")
         except Exception as e:
             raise Exception(f"Error processing image download from {url}: {e}")
+
+    def remix_image(self, image1_url, image2_url, width=None, height=None):
+        """Generate image using 2 input images with Flux Redux style conditioning"""
+        try:
+            workflow_id = "flux-2-redux"
+            
+            # Load workflow
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
+            with open(workflow_file, "r") as f:
+                workflow = json.load(f)
+
+            # Get the appropriate mapping for this workflow
+            mapping = WORKFLOW_MAPPINGS.get(workflow_id, DEFAULT_MAPPING)
+            logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
+
+            # Prepare parameters with defaults - try passing URLs directly to LoadImage nodes
+            params = {
+                "image1_url": image1_url,
+                "image2_url": image2_url,
+                "width": width or 720,
+                "height": height or 720
+            }
+
+            # Apply parameters to workflow nodes
+            for param_key, value in params.items():
+                if param_key in mapping:
+                    node_id, input_key = mapping[param_key]
+                    if node_id not in workflow:
+                        raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
+                    
+                    # Log before and after for debugging
+                    old_value = workflow[node_id]["inputs"].get(input_key, "NOT_SET")
+                    workflow[node_id]["inputs"][input_key] = value
+                    logger.info(f"Set {param_key} -> node {node_id}[{input_key}]: '{old_value}' -> '{value}'")
+
+            logger.info(f"Submitting remix image workflow {workflow_id} to ComfyUI...")
+            response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
+            if response.status_code != 200:
+                raise Exception(f"Failed to queue workflow: {response.status_code} - {response.text}")
+
+            prompt_id = response.json()["prompt_id"]
+            logger.info(f"Queued remix image workflow with prompt_id: {prompt_id}")
+
+            # Wait for completion and get results
+            while True:
+                history = requests.get(f"{self.base_url}/history/{prompt_id}").json()
+                if history.get(prompt_id):
+                    outputs = history[prompt_id]["outputs"]
+                    logger.info("Remix image workflow outputs: %s", json.dumps(outputs, indent=2))
+                    
+                    # Use the configured output node from tools.json (node 9 = SAVE_IMAGE)
+                    output_node_id = "9"
+                    if output_node_id not in outputs:
+                        raise Exception(f"Output node {output_node_id} not found in outputs: {outputs}")
+                    
+                    image_data = outputs[output_node_id]["images"][0]
+                    image_filename = image_data["filename"]
+                    subfolder = image_data.get("subfolder", "")
+                    image_url = f"{self.base_url}/view?filename={image_filename}&subfolder={subfolder}&type=output"
+                    
+                    logger.info(f"Generated remix image URL: {image_url}")
+                    return image_url
+                    
+                time.sleep(1)
+
+        except FileNotFoundError:
+            raise Exception(f"Workflow file '{workflow_file}' not found")
+        except KeyError as e:
+            raise Exception(f"Workflow error - invalid node or input: {e}")
+        except requests.RequestException as e:
+            raise Exception(f"Failed to communicate with ComfyUI server: {e}")
+        except Exception as e:
+            raise Exception(f"Error generating remix image: {e}")
 
     def generate_3_image_video(self, image1_url, image2_url, image3_url, width=None, height=None, frame_length=None):
         """Generate video using 3 input images with Flux Redux and WAN 2.2 I2V workflow"""
