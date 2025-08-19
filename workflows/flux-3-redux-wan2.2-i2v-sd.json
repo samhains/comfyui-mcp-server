@@ -727,7 +727,7 @@
         0
       ],
       "image": [
-        "226",
+        "243",
         0
       ]
     },
@@ -753,7 +753,7 @@
         0
       ],
       "image": [
-        "215",
+        "248",
         0
       ]
     },
@@ -779,7 +779,7 @@
         0
       ],
       "image": [
-        "224",
+        "249",
         0
       ]
     },
@@ -918,6 +918,33 @@
     "class_type": "LoadImage",
     "_meta": {
       "title": "Load Image"
+    }
+  },
+  "243": {
+    "inputs": {
+      "url_or_path": ""
+    },
+    "class_type": "LoadImageFromUrlOrPath",
+    "_meta": {
+      "title": "@IMAGE_1"
+    }
+  },
+  "248": {
+    "inputs": {
+      "url_or_path": ""
+    },
+    "class_type": "LoadImageFromUrlOrPath",
+    "_meta": {
+      "title": "@IMAGE_2"
+    }
+  },
+  "249": {
+    "inputs": {
+      "url_or_path": ""
+    },
+    "class_type": "LoadImageFromUrlOrPath",
+    "_meta": {
+      "title": "@IMAGE_3"
     }
   }
 }

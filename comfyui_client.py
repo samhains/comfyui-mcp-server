@@ -50,11 +50,9 @@ WORKFLOW_MAPPINGS = {
         "frame_length": ("145", "value")
     },
     "flux-3-redux-wan2.2-i2v-sd": {
-        "image1_url": ("226", "image"),
-        "image2_url": ("215", "image"), 
-        "image3_url": ("224", "image"),
-        "prompt": ("227", "text"),
-        "audio_prompt": ("234", "text"),
+        "image1_url": ("243", "url_or_path"),
+        "image2_url": ("248", "url_or_path"), 
+        "image3_url": ("249", "url_or_path"),
         "width": ("143", "value"),
         "height": ("144", "value"),
         "frame_length": ("145", "value")
@@ -272,17 +270,8 @@ class ComfyUIClient:
 
     def generate_3_image_video(self, image1_url, image2_url, image3_url, width=None, height=None, frame_length=None):
         """Generate video using 3 input images with Flux Redux and WAN 2.2 I2V workflow"""
-        downloaded_files = []
         try:
             workflow_id = "flux-3-redux-wan2.2-i2v-sd"
-            
-            # Download images from URLs
-            logger.info("Downloading input images...")
-            image1_filename = self._download_image_from_url(image1_url, "image1")
-            image2_filename = self._download_image_from_url(image2_url, "image2")
-            image3_filename = self._download_image_from_url(image3_url, "image3")
-            
-            downloaded_files = [image1_filename, image2_filename, image3_filename]
             
             # Load workflow
             script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -294,11 +283,11 @@ class ComfyUIClient:
             mapping = WORKFLOW_MAPPINGS.get(workflow_id, DEFAULT_MAPPING)
             logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
 
-            # Prepare parameters
+            # Prepare parameters - pass URLs directly to LoadImageFromUrlOrPath nodes
             params = {
-                "image1_url": image1_filename,
-                "image2_url": image2_filename, 
-                "image3_url": image3_filename
+                "image1_url": image1_url,
+                "image2_url": image2_url, 
+                "image3_url": image3_url
             }
             
             # Add optional parameters if provided
@@ -316,7 +305,7 @@ class ComfyUIClient:
                     if node_id not in workflow:
                         raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
                     workflow[node_id]["inputs"][input_key] = value
-                    logger.info(f"Set {param_key} -> node {node_id}[{input_key}] = {value}")
+                    logger.info(f"Set {param_key} -> node {node_id}[{input_key}]: '{value}'")
 
             logger.info(f"Submitting 3-image video workflow {workflow_id} to ComfyUI...")
             response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
@@ -333,29 +322,20 @@ class ComfyUIClient:
                     outputs = history[prompt_id]["outputs"]
                     logger.info("3-image video workflow outputs: %s", json.dumps(outputs, indent=2))
                     
-                    # Look for video output node
-                    video_node = None
-                    for node_id, output in outputs.items():
-                        if "images" in output and any(item["filename"].endswith(".mp4") for item in output["images"]):
-                            video_node = node_id
-                            break
-                        elif "gifs" in output and any(item["filename"].endswith(".mp4") for item in output["gifs"]):
-                            video_node = node_id
-                            break
-                        elif "filenames" in output and any(item["filename"].endswith(".mp4") for item in output["filenames"]):
-                            video_node = node_id
-                            break
+                    # Use hardcoded output node from tools.json (node 125 = SAVE_VIDEO)
+                    output_node_id = "125"
+                    if output_node_id not in outputs:
+                        raise Exception(f"Output node {output_node_id} not found in outputs: {outputs}")
                     
-                    if not video_node:
-                        raise Exception(f"No output node with video found: {outputs}")
-                    
-                    # Get video data
-                    if "images" in outputs[video_node]:
-                        video_data = outputs[video_node]["images"][0]
-                    elif "gifs" in outputs[video_node]:
-                        video_data = outputs[video_node]["gifs"][0]
+                    # Get video data from VHS_VideoCombine node (can be in different arrays)
+                    if "images" in outputs[output_node_id]:
+                        video_data = outputs[output_node_id]["images"][0]
+                    elif "gifs" in outputs[output_node_id]:
+                        video_data = outputs[output_node_id]["gifs"][0]
+                    elif "filenames" in outputs[output_node_id]:
+                        video_data = outputs[output_node_id]["filenames"][0]
                     else:
-                        video_data = outputs[video_node]["filenames"][0]
+                        raise Exception(f"No video data found in output node {output_node_id}: {outputs[output_node_id]}")
                     
                     video_filename = video_data["filename"]
                     subfolder = video_data.get("subfolder", "")
@@ -372,17 +352,8 @@ class ComfyUIClient:
             raise Exception(f"Workflow error - invalid node or input: {e}")
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
-        finally:
-            # Clean up downloaded images
-            temp_dir = tempfile.gettempdir()
-            for filename in downloaded_files:
-                try:
-                    file_path = os.path.join(temp_dir, filename)
-                    if os.path.exists(file_path):
-                        os.remove(file_path)
-                        logger.info(f"Cleaned up temporary file: {file_path}")
-                except Exception as e:
-                    logger.warning(f"Failed to clean up temporary file {filename}: {e}")
+        except Exception as e:
+            raise Exception(f"Error generating 3-image video: {e}")
 
     def generate_video(self, prompt, width=None, height=None, audio_prompt=None, frame_length=None, workflow_id=None):
         try:
