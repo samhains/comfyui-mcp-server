@@ -285,11 +285,12 @@ def generate_f2f_video(params: dict) -> dict:
             - width (optional): Video width in pixels
             - height (optional): Video height in pixels
             - frame_length (optional): Number of frames for the video (minimum 81 frames)
+            - prompt (optional): Custom prompt for motion description
     
     Returns:
         dict: Contains 'video_url' on success or 'error' on failure
         
-    Example params: {"image1_url": "https://storage.supabase.co/bucket/start.jpg", "image2_url": "https://storage.supabase.co/bucket/end.jpg", "width": 720, "height": 720, "frame_length": 81}
+    Example params: {"image1_url": "https://storage.supabase.co/bucket/start.jpg", "image2_url": "https://storage.supabase.co/bucket/end.jpg", "width": 720, "height": 720, "frame_length": 81, "prompt": "smooth transition"}
     """
     logger.info(f"Received frame-to-frame video request with params: {params}")
     try:
@@ -303,6 +304,7 @@ def generate_f2f_video(params: dict) -> dict:
         width = param_dict.get("width")
         height = param_dict.get("height")
         frame_length = param_dict.get("frame_length")
+        prompt = param_dict.get("prompt")
         
         # Use global comfyui_client
         video_url = comfyui_client.generate_f2f_video(
@@ -310,7 +312,8 @@ def generate_f2f_video(params: dict) -> dict:
             image2_url=image2_url,
             width=width,
             height=height,
-            frame_length=frame_length
+            frame_length=frame_length,
+            prompt=prompt
         )
         
         logger.info(f"Returning frame-to-frame video URL: {video_url}")

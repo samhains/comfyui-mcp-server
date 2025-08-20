@@ -68,7 +68,8 @@ WORKFLOW_MAPPINGS = {
         "image2_url": ("280", "url_or_path"),
         "width": ("143", "value"),
         "height": ("144", "value"),
-        "frame_length": ("145", "value")
+        "frame_length": ("145", "value"),
+        "prompt": ("141", "value")
     }
 }
 
@@ -151,7 +152,7 @@ class ComfyUIClient:
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
 
-    def generate_f2f_video(self, image1_url, image2_url, width=None, height=None, frame_length=None):
+    def generate_f2f_video(self, image1_url, image2_url, width=None, height=None, frame_length=None, prompt=None):
         """Generate frame-to-frame animation video between two images using WAN 2.2 I2V workflow
         
         Args:
@@ -160,6 +161,7 @@ class ComfyUIClient:
             width (int, optional): Video width in pixels. Defaults to 720.
             height (int, optional): Video height in pixels. Defaults to 720.
             frame_length (int, optional): Number of frames for the video. Defaults to 81.
+            prompt (str, optional): Custom prompt for motion description. Defaults to "".
             
         Returns:
             str: URL to the generated video file
@@ -186,7 +188,8 @@ class ComfyUIClient:
                 "image2_url": image2_url,
                 "width": width or 720,
                 "height": height or 720,
-                "frame_length": frame_length or 81
+                "frame_length": frame_length or 81,
+                "prompt": prompt or ""
             }
 
             # Apply parameters to workflow nodes
@@ -449,7 +452,7 @@ class ComfyUIClient:
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
 
-    def generate_f2f_video(self, image1_url, image2_url, width=None, height=None, frame_length=None):
+    def generate_f2f_video(self, image1_url, image2_url, width=None, height=None, frame_length=None, prompt=None):
         """Generate frame-to-frame animation video between two images using WAN 2.2 I2V workflow
         
         Args:
@@ -458,6 +461,7 @@ class ComfyUIClient:
             width (int, optional): Video width in pixels. Defaults to 720.
             height (int, optional): Video height in pixels. Defaults to 720.
             frame_length (int, optional): Number of frames for the video. Defaults to 81.
+            prompt (str, optional): Custom prompt for motion description. Defaults to "".
             
         Returns:
             str: URL to the generated video file
@@ -484,7 +488,8 @@ class ComfyUIClient:
                 "image2_url": image2_url,
                 "width": width or 720,
                 "height": height or 720,
-                "frame_length": frame_length or 81
+                "frame_length": frame_length or 81,
+                "prompt": prompt or ""
             }
 
             # Apply parameters to workflow nodes
@@ -644,7 +649,7 @@ class ComfyUIClient:
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
 
-    def generate_f2f_video(self, image1_url, image2_url, width=None, height=None, frame_length=None):
+    def generate_f2f_video(self, image1_url, image2_url, width=None, height=None, frame_length=None, prompt=None):
         """Generate frame-to-frame animation video between two images using WAN 2.2 I2V workflow
         
         Args:
@@ -653,6 +658,7 @@ class ComfyUIClient:
             width (int, optional): Video width in pixels. Defaults to 720.
             height (int, optional): Video height in pixels. Defaults to 720.
             frame_length (int, optional): Number of frames for the video. Defaults to 81.
+            prompt (str, optional): Custom prompt for motion description. Defaults to "".
             
         Returns:
             str: URL to the generated video file
@@ -679,7 +685,8 @@ class ComfyUIClient:
                 "image2_url": image2_url,
                 "width": width or 720,
                 "height": height or 720,
-                "frame_length": frame_length or 81
+                "frame_length": frame_length or 81,
+                "prompt": prompt or ""
             }
 
             # Apply parameters to workflow nodes

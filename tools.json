@@ -235,6 +235,11 @@
           "required": false,
           "type": "integer",
           "description": "Number of frames for the video. Defaults to 81 frames (~2.5 seconds at 32fps). Higher values create longer videos but take more time to process. Typical range: 25-200 frames."
+        },
+        "prompt": {
+          "required": false,
+          "type": "string",
+          "description": "Custom motion prompt describing the desired animation between the two images. If empty, uses default behavior."
         }
       },
       "workflow_mapping": {
@@ -243,7 +248,8 @@
         "image2_url": ["280", "url_or_path"],
         "width": ["143", "value"],
         "height": ["144", "value"],
-        "frame_length": ["145", "value"]
+        "frame_length": ["145", "value"],
+        "prompt": ["141", "value"]
       },
       "output_node": {
         "node_id": "125",
