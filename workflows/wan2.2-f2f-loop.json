@@ -148,7 +148,7 @@
   "99": {
     "inputs": {
       "text": [
-        "283",
+        "141",
         0
       ],
       "clip": [
@@ -518,33 +518,8 @@
       "title": "WanFirstLastFrameToVideo"
     }
   },
-  "268": {
-    "inputs": {
-      "text": "Imagine a video transformation. Do not describe any objects, people, or places. Do not mention source or destination images. Instead, describe only the kinds of motion, visual transitions, and dynamic effects that could occur. Keep the description abstract and focused purely on movement and change over time. Print only the prompt for Wan 2.2.",
-      "model": "Qwen2.5-VL-3B-Instruct",
-      "quantization": "none",
-      "keep_model_loaded": false,
-      "temperature": 0.7,
-      "max_new_tokens": 512,
-      "seed": 1080,
-      "video_path": "",
-      "image": [
-        "276",
-        0
-      ]
-    },
-    "class_type": "Qwen2.5VL",
-    "_meta": {
-      "title": "Qwen2.5VL GENERATES MOTION PROMPT"
-    }
-  },
   "269": {
-    "inputs": {
-      "text": [
-        "268",
-        0
-      ]
-    },
+    "inputs": {},
     "class_type": "ShowText|pysssss",
     "_meta": {
       "title": "Show Text 🐍"
@@ -640,22 +615,6 @@
     "class_type": "PreviewImage",
     "_meta": {
       "title": "Preview Image"
-    }
-  },
-  "283": {
-    "inputs": {
-      "any_01": [
-        "268",
-        0
-      ],
-      "any_02": [
-        "141",
-        0
-      ]
-    },
-    "class_type": "Any Switch (rgthree)",
-    "_meta": {
-      "title": "Any Switch (rgthree)"
     }
   }
 }
