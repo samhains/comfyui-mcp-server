@@ -274,6 +274,57 @@ def generate_3_image_video(params: dict) -> dict:
         logger.error(f"Error: {e}")
         return {"error": str(e)}
 
+@mcp.tool()
+def generate_f2f_video(params: dict) -> dict:
+    """Generate a video using frame-to-frame animation between 2 input images with WAN 2.2 I2V workflow through ComfyUI
+    
+    Args:
+        params: Dictionary containing:
+            - image1_url (required): URL to the first/starting frame image
+            - image2_url (required): URL to the second/ending frame image
+            - width (optional): Video width in pixels
+            - height (optional): Video height in pixels
+            - frame_length (optional): Number of frames for the video (minimum 81 frames)
+    
+    Returns:
+        dict: Contains 'video_url' on success or 'error' on failure
+        
+    Example params: {"image1_url": "https://storage.supabase.co/bucket/start.jpg", "image2_url": "https://storage.supabase.co/bucket/end.jpg", "width": 720, "height": 720, "frame_length": 81}
+    """
+    logger.info(f"Received frame-to-frame video request with params: {params}")
+    try:
+        param_dict = params
+        
+        # Required parameters
+        image1_url = param_dict["image1_url"]
+        image2_url = param_dict["image2_url"]
+        
+        # Optional parameters
+        width = param_dict.get("width")
+        height = param_dict.get("height")
+        frame_length = param_dict.get("frame_length")
+        
+        # Use global comfyui_client
+        video_url = comfyui_client.generate_f2f_video(
+            image1_url=image1_url,
+            image2_url=image2_url,
+            width=width,
+            height=height,
+            frame_length=frame_length
+        )
+        
+        logger.info(f"Returning frame-to-frame video URL: {video_url}")
+        return {"video_url": video_url}
+        
+    except KeyError as e:
+        missing_param = str(e).strip("'")
+        error_msg = f"Missing required parameter: {missing_param}"
+        logger.error(error_msg)
+        return {"error": error_msg}
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
 # Create FastAPI app for HTTP endpoints
 app = FastAPI(title="ComfyUI MCP Server")
 
@@ -349,6 +400,17 @@ async def generate_3_image_video_http(params: dict):
     logger.info(f"Received HTTP 3-image video request with params: {params}")
     try:
         result = generate_3_image_video(params)
+        return result
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
+@app.post("/generate_f2f_video")
+async def generate_f2f_video_http(params: dict):
+    """HTTP endpoint for frame-to-frame video generation"""
+    logger.info(f"Received HTTP frame-to-frame video request with params: {params}")
+    try:
+        result = generate_f2f_video(params)
         return result
     except Exception as e:
         logger.error(f"Error: {e}")

@@ -62,6 +62,13 @@ WORKFLOW_MAPPINGS = {
         "image2_url": ("70", "url_or_path"),
         "width": ("62", "value"),
         "height": ("65", "value")
+    },
+    "wan2.2-f2f-loop": {
+        "image1_url": ("278", "url_or_path"),
+        "image2_url": ("280", "url_or_path"),
+        "width": ("143", "value"),
+        "height": ("144", "value"),
+        "frame_length": ("145", "value")
     }
 }
 
@@ -143,6 +150,95 @@ class ComfyUIClient:
             raise Exception(f"Workflow error - invalid node or input: {e}")
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
+
+    def generate_f2f_video(self, image1_url, image2_url, width=None, height=None, frame_length=None):
+        """Generate frame-to-frame animation video between two images using WAN 2.2 I2V workflow
+        
+        Args:
+            image1_url (str): URL to the first/starting frame image
+            image2_url (str): URL to the second/ending frame image  
+            width (int, optional): Video width in pixels. Defaults to 720.
+            height (int, optional): Video height in pixels. Defaults to 720.
+            frame_length (int, optional): Number of frames for the video. Defaults to 81.
+            
+        Returns:
+            str: URL to the generated video file
+            
+        Raises:
+            Exception: If workflow execution fails
+        """
+        try:
+            workflow_id = "wan2.2-f2f-loop"
+            
+            # Load workflow
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
+            with open(workflow_file, "r") as f:
+                workflow = json.load(f)
+
+            # Get the appropriate mapping for this workflow
+            mapping = WORKFLOW_MAPPINGS.get(workflow_id, DEFAULT_MAPPING)
+            logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
+
+            # Prepare parameters with defaults
+            params = {
+                "image1_url": image1_url,
+                "image2_url": image2_url,
+                "width": width or 720,
+                "height": height or 720,
+                "frame_length": frame_length or 81
+            }
+
+            # Apply parameters to workflow nodes
+            for param_key, value in params.items():
+                if param_key in mapping:
+                    node_id, input_key = mapping[param_key]
+                    if node_id not in workflow:
+                        raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
+                    workflow[node_id]["inputs"][input_key] = value
+                    logger.info(f"Set {param_key} -> node {node_id}[{input_key}] = {value}")
+
+            # Submit workflow and wait for results
+            response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
+            if response.status_code != 200:
+                raise Exception(f"Failed to queue workflow: {response.status_code} - {response.text}")
+
+            prompt_id = response.json()["prompt_id"]
+            logger.info(f"Queued frame-to-frame video workflow with prompt_id: {prompt_id}")
+
+            # Wait for completion and get results using HARDCODED output node
+            while True:
+                history = requests.get(f"{self.base_url}/history/{prompt_id}").json()
+                if history.get(prompt_id):
+                    outputs = history[prompt_id]["outputs"]
+                    logger.info("Frame-to-frame video workflow outputs: %s", json.dumps(outputs, indent=2))
+                    
+                    # Use the configured output node from tools.json (node 125 = SAVE_VIDEO)
+                    output_node_id = "125"
+                    if output_node_id not in outputs:
+                        raise Exception(f"Output node {output_node_id} not found in outputs: {outputs}")
+                    
+                    # Video can be in "gifs", "filenames", or "images" array for VHS_VideoCombine nodes
+                    if "gifs" in outputs[output_node_id]:
+                        video_data = outputs[output_node_id]["gifs"][0]
+                    elif "filenames" in outputs[output_node_id]:
+                        video_data = outputs[output_node_id]["filenames"][0]
+                    elif "images" in outputs[output_node_id]:
+                        video_data = outputs[output_node_id]["images"][0]
+                    else:
+                        raise Exception(f"No video output found in node {output_node_id}: {outputs[output_node_id]}")
+                    
+                    video_filename = video_data["filename"]
+                    subfolder = video_data.get("subfolder", "")
+                    video_url = f"{self.base_url}/view?filename={video_filename}&subfolder={subfolder}&type=output"
+                    
+                    logger.info(f"Generated frame-to-frame video URL: {video_url}")
+                    return video_url
+                    
+                time.sleep(1)
+
+        except Exception as e:
+            raise Exception(f"Error generating frame-to-frame video: {e}")
 
     def _download_image_from_url(self, url, filename_prefix="temp_image"):
         """Download an image from URL and save it locally with a unique filename"""
@@ -352,6 +448,95 @@ class ComfyUIClient:
             raise Exception(f"Workflow error - invalid node or input: {e}")
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
+
+    def generate_f2f_video(self, image1_url, image2_url, width=None, height=None, frame_length=None):
+        """Generate frame-to-frame animation video between two images using WAN 2.2 I2V workflow
+        
+        Args:
+            image1_url (str): URL to the first/starting frame image
+            image2_url (str): URL to the second/ending frame image  
+            width (int, optional): Video width in pixels. Defaults to 720.
+            height (int, optional): Video height in pixels. Defaults to 720.
+            frame_length (int, optional): Number of frames for the video. Defaults to 81.
+            
+        Returns:
+            str: URL to the generated video file
+            
+        Raises:
+            Exception: If workflow execution fails
+        """
+        try:
+            workflow_id = "wan2.2-f2f-loop"
+            
+            # Load workflow
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
+            with open(workflow_file, "r") as f:
+                workflow = json.load(f)
+
+            # Get the appropriate mapping for this workflow
+            mapping = WORKFLOW_MAPPINGS.get(workflow_id, DEFAULT_MAPPING)
+            logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
+
+            # Prepare parameters with defaults
+            params = {
+                "image1_url": image1_url,
+                "image2_url": image2_url,
+                "width": width or 720,
+                "height": height or 720,
+                "frame_length": frame_length or 81
+            }
+
+            # Apply parameters to workflow nodes
+            for param_key, value in params.items():
+                if param_key in mapping:
+                    node_id, input_key = mapping[param_key]
+                    if node_id not in workflow:
+                        raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
+                    workflow[node_id]["inputs"][input_key] = value
+                    logger.info(f"Set {param_key} -> node {node_id}[{input_key}] = {value}")
+
+            # Submit workflow and wait for results
+            response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
+            if response.status_code != 200:
+                raise Exception(f"Failed to queue workflow: {response.status_code} - {response.text}")
+
+            prompt_id = response.json()["prompt_id"]
+            logger.info(f"Queued frame-to-frame video workflow with prompt_id: {prompt_id}")
+
+            # Wait for completion and get results using HARDCODED output node
+            while True:
+                history = requests.get(f"{self.base_url}/history/{prompt_id}").json()
+                if history.get(prompt_id):
+                    outputs = history[prompt_id]["outputs"]
+                    logger.info("Frame-to-frame video workflow outputs: %s", json.dumps(outputs, indent=2))
+                    
+                    # Use the configured output node from tools.json (node 125 = SAVE_VIDEO)
+                    output_node_id = "125"
+                    if output_node_id not in outputs:
+                        raise Exception(f"Output node {output_node_id} not found in outputs: {outputs}")
+                    
+                    # Video can be in "gifs", "filenames", or "images" array for VHS_VideoCombine nodes
+                    if "gifs" in outputs[output_node_id]:
+                        video_data = outputs[output_node_id]["gifs"][0]
+                    elif "filenames" in outputs[output_node_id]:
+                        video_data = outputs[output_node_id]["filenames"][0]
+                    elif "images" in outputs[output_node_id]:
+                        video_data = outputs[output_node_id]["images"][0]
+                    else:
+                        raise Exception(f"No video output found in node {output_node_id}: {outputs[output_node_id]}")
+                    
+                    video_filename = video_data["filename"]
+                    subfolder = video_data.get("subfolder", "")
+                    video_url = f"{self.base_url}/view?filename={video_filename}&subfolder={subfolder}&type=output"
+                    
+                    logger.info(f"Generated frame-to-frame video URL: {video_url}")
+                    return video_url
+                    
+                time.sleep(1)
+
+        except Exception as e:
+            raise Exception(f"Error generating frame-to-frame video: {e}")
         except Exception as e:
             raise Exception(f"Error generating 3-image video: {e}")
 
@@ -458,3 +643,92 @@ class ComfyUIClient:
             raise Exception(f"Workflow error - invalid node or input: {e}")
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
+
+    def generate_f2f_video(self, image1_url, image2_url, width=None, height=None, frame_length=None):
+        """Generate frame-to-frame animation video between two images using WAN 2.2 I2V workflow
+        
+        Args:
+            image1_url (str): URL to the first/starting frame image
+            image2_url (str): URL to the second/ending frame image  
+            width (int, optional): Video width in pixels. Defaults to 720.
+            height (int, optional): Video height in pixels. Defaults to 720.
+            frame_length (int, optional): Number of frames for the video. Defaults to 81.
+            
+        Returns:
+            str: URL to the generated video file
+            
+        Raises:
+            Exception: If workflow execution fails
+        """
+        try:
+            workflow_id = "wan2.2-f2f-loop"
+            
+            # Load workflow
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
+            with open(workflow_file, "r") as f:
+                workflow = json.load(f)
+
+            # Get the appropriate mapping for this workflow
+            mapping = WORKFLOW_MAPPINGS.get(workflow_id, DEFAULT_MAPPING)
+            logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
+
+            # Prepare parameters with defaults
+            params = {
+                "image1_url": image1_url,
+                "image2_url": image2_url,
+                "width": width or 720,
+                "height": height or 720,
+                "frame_length": frame_length or 81
+            }
+
+            # Apply parameters to workflow nodes
+            for param_key, value in params.items():
+                if param_key in mapping:
+                    node_id, input_key = mapping[param_key]
+                    if node_id not in workflow:
+                        raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
+                    workflow[node_id]["inputs"][input_key] = value
+                    logger.info(f"Set {param_key} -> node {node_id}[{input_key}] = {value}")
+
+            # Submit workflow and wait for results
+            response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
+            if response.status_code != 200:
+                raise Exception(f"Failed to queue workflow: {response.status_code} - {response.text}")
+
+            prompt_id = response.json()["prompt_id"]
+            logger.info(f"Queued frame-to-frame video workflow with prompt_id: {prompt_id}")
+
+            # Wait for completion and get results using HARDCODED output node
+            while True:
+                history = requests.get(f"{self.base_url}/history/{prompt_id}").json()
+                if history.get(prompt_id):
+                    outputs = history[prompt_id]["outputs"]
+                    logger.info("Frame-to-frame video workflow outputs: %s", json.dumps(outputs, indent=2))
+                    
+                    # Use the configured output node from tools.json (node 125 = SAVE_VIDEO)
+                    output_node_id = "125"
+                    if output_node_id not in outputs:
+                        raise Exception(f"Output node {output_node_id} not found in outputs: {outputs}")
+                    
+                    # Video can be in "gifs", "filenames", or "images" array for VHS_VideoCombine nodes
+                    if "gifs" in outputs[output_node_id]:
+                        video_data = outputs[output_node_id]["gifs"][0]
+                    elif "filenames" in outputs[output_node_id]:
+                        video_data = outputs[output_node_id]["filenames"][0]
+                    elif "images" in outputs[output_node_id]:
+                        video_data = outputs[output_node_id]["images"][0]
+                    else:
+                        raise Exception(f"No video output found in node {output_node_id}: {outputs[output_node_id]}")
+                    
+                    video_filename = video_data["filename"]
+                    subfolder = video_data.get("subfolder", "")
+                    video_url = f"{self.base_url}/view?filename={video_filename}&subfolder={subfolder}&type=output"
+                    
+                    logger.info(f"Generated frame-to-frame video URL: {video_url}")
+                    return video_url
+                    
+                time.sleep(1)
+
+        except Exception as e:
+            raise Exception(f"Error generating frame-to-frame video: {e}")
