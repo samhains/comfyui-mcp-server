@@ -21,18 +21,7 @@
           "description": "Image height in pixels"
         }
       },
-      "workflow_mapping": {
-        "description": "Maps parameters to ComfyUI workflow nodes",
-        "prompt": ["78", "value"],
-        "width": ["75", "value"],
-        "height": ["76", "value"]
-      },
-      "output_node": {
-        "node_id": "60",
-        "class_type": "SaveImage",
-        "title": "SAVE_IMAGE",
-        "output_type": "image"
-      }
+      
     },
     "generate_video": {
       "description": "Generates videos using WAN 2.2 T2V workflow through ComfyUI",
@@ -64,14 +53,7 @@
           "description": "Video height in pixels. Defaults to config value if not specified."
         }
       },
-      "workflow_mapping": {
-        "description": "Maps parameters to ComfyUI workflow nodes",
-        "prompt": ["141", "value"],
-        "audio_prompt": ["147", "value"],
-        "frame_length": ["145", "value"],
-        "width": ["143", "value"],
-        "height": ["144", "value"]
-      },
+      
       "notes": [
         "This workflow generates both video and audio using MMAudio",
         "The audio prompt is embedded in the workflow itself",
@@ -104,19 +86,7 @@
           "description": "Image height in pixels. Defaults to 720 if not specified."
         }
       },
-      "workflow_mapping": {
-        "description": "Maps parameters to ComfyUI workflow nodes",
-        "image1_url": ["69", "url_or_path"],
-        "image2_url": ["70", "url_or_path"],
-        "width": ["62", "value"],
-        "height": ["65", "value"]
-      },
-      "output_node": {
-        "node_id": "9",
-        "class_type": "SaveImage",
-        "title": "SAVE_IMAGE",
-        "output_type": "image"
-      },
+      
       "notes": [
         "This workflow uses Flux Redux for style conditioning with 2 reference images",
         "Images are downloaded from URLs and processed through CLIP Vision encoding",
@@ -159,22 +129,7 @@
           "description": "Video height in pixels. Defaults to workflow configuration (720px). Must be compatible with the model requirements."
         }
       },
-      "workflow_mapping": {
-        "description": "Maps parameters to ComfyUI workflow nodes",
-        "image1_url": ["243", "url_or_path"],
-        "image2_url": ["248", "url_or_path"],
-        "image3_url": ["249", "url_or_path"],
-        "frame_length": ["145", "value"],
-        "width": ["143", "value"],
-        "height": ["144", "value"]
-      },
-      "output_node": {
-        "node_id": "125",
-        "class_type": "VHS_VideoCombine",
-        "title": "SAVE_VIDEO",
-        "output_type": "video",
-        "format": "video/h264-mp4"
-      },
+      
       "notes": [
         "This workflow combines Flux Redux (3-image style conditioning) + WAN 2.2 I2V + MMAudio",
         "Uses LoadImageFromUrlOrPath nodes to load images directly from URLs (@IMAGE_1, @IMAGE_2, @IMAGE_3)",
@@ -246,22 +201,7 @@
           "description": "Custom motion prompt describing the desired animation between the two images. If empty, uses default behavior."
         }
       },
-      "workflow_mapping": {
-        "description": "Maps parameters to ComfyUI workflow nodes",
-        "image1_url": ["278", "url_or_path"],
-        "image2_url": ["280", "url_or_path"],
-        "width": ["143", "value"],
-        "height": ["144", "value"],
-        "frame_length": ["145", "value"],
-        "prompt": ["141", "value"]
-      },
-      "output_node": {
-        "node_id": "125",
-        "class_type": "VHS_VideoCombine",
-        "title": "SAVE_VIDEO",
-        "output_type": "video",
-        "format": "video/h264-mp4"
-      },
+      
       "notes": [
         "This workflow creates smooth frame-to-frame animation between two input images using WAN 2.2 I2V technology",
         "Uses LoadImageFromUrlOrPath nodes to load images directly from URLs (@IMAGE_START, @IMAGE_END)",
@@ -326,16 +266,10 @@
     "steps": [
       "1. Create workflow JSON file in workflows/ directory",
       "2. Add tool definition to this file (tools.json)",
-      "3. Define workflow_mapping for parameter routing",
-      "4. Update WORKFLOW_MAPPINGS in comfyui_client.py",
+      "3. Set the workflow_id to select the workflow",
+      "4. Add per-workflow mapping in comfyui_client.py (single source of truth)",
       "5. Test the integration"
     ],
-    "workflow_mapping_format": {
-      "description": "Each parameter maps to [node_id, input_key] in workflow JSON",
-      "example": {
-        "prompt": ["6", "text"],
-        "width": ["27", "width"]
-      }
-    }
+    
   }
 }
