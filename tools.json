@@ -20,8 +20,7 @@
           "type": "integer", 
           "description": "Image height in pixels"
         }
-      },
-      
+      }
     },
     "generate_video": {
       "description": "Generates videos using WAN 2.2 T2V workflow through ComfyUI",
@@ -269,7 +268,6 @@
       "3. Set the workflow_id to select the workflow",
       "4. Add per-workflow mapping in comfyui_client.py (single source of truth)",
       "5. Test the integration"
-    ],
-    
+    ]
   }
 }
