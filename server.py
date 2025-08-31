@@ -94,7 +94,8 @@ def generate_image(params: dict) -> dict:
         width = config["resolutions"]["image_generation"]["width"]
         height = config["resolutions"]["image_generation"]["height"]
         workflow_id = tool_config["workflow_id"]
-        model = tool_config["model"]
+        # Model is optional; some workflows (e.g., Qwen Image) do not use CheckpointLoaderSimple
+        model = tool_config.get("model")
 
         # Use global comfyui_client (since mcp.context isn't available)
         image_url = comfyui_client.generate_image(

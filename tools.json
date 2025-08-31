@@ -2,9 +2,8 @@
   "description": "Tool definitions for ComfyUI MCP Server. Each tool defines how to interact with ComfyUI workflows.",
   "tools": {
     "generate_image": {
-      "description": "Generates images using Flux model through ComfyUI",
-      "workflow_id": "flux-dev-workflow",
-      "model": "flux1-dev-fp8.safetensors",
+      "description": "Generates images using Qwen-Image workflow through ComfyUI",
+      "workflow_id": "image_qwen_image",
       "parameters": {
         "prompt": {
           "required": true,
@@ -24,10 +23,15 @@
       },
       "workflow_mapping": {
         "description": "Maps parameters to ComfyUI workflow nodes",
-        "prompt": ["6", "text"],
-        "width": ["27", "width"],
-        "height": ["27", "height"],
-        "model": ["30", "ckpt_name"]
+        "prompt": ["78", "value"],
+        "width": ["75", "value"],
+        "height": ["76", "value"]
+      },
+      "output_node": {
+        "node_id": "60",
+        "class_type": "SaveImage",
+        "title": "SAVE_IMAGE",
+        "output_type": "image"
       }
     },
     "generate_video": {
@@ -312,6 +316,7 @@
     "directory": "workflows/",
     "naming_convention": "{workflow-name}.json",
     "examples": {
+      "image_qwen_image": "workflows/image_qwen_image.json",
       "flux-dev-workflow": "workflows/flux-dev-workflow.json",
       "mmaudio-workflow": "workflows/mmaudio-workflow.json"
     }

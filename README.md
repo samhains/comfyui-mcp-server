@@ -8,7 +8,7 @@ This project enables AI agents to send generation requests to ComfyUI using the 
 
 ### 🎨 Image Generation
 - **Tool**: `generate_image`
-- **Workflow**: `flux-dev-workflow` (Flux 1.0 Dev model)
+- **Workflow**: `image_qwen_image` (Qwen-Image)
 - **Parameters**: `prompt`, `width`, `height`
 
 ### 🎬 Video Generation  
@@ -127,8 +127,12 @@ The server uses `config.json` and `tools.json` for configuration:
 ## Required Models
 
 Ensure these models are installed in your ComfyUI `models/` directory:
-- **Checkpoints**: `flux1-dev-fp8.safetensors`
-- **CLIP**: `umt5_xxl_fp8_e4m3fn_scaled.safetensors` 
+- **Qwen Image UNet**: `qwen_image_fp8_e4m3fn.safetensors`
+- **Qwen CLIP**: `qwen_2.5_vl_7b_fp8_scaled.safetensors`
+- **Qwen VAE**: `qwen_image_vae.safetensors`
+- **Qwen Lora**: `Qwen-Image-Lightning-8steps-V1.0.safetensors`
+- (If switching back to Flux) **Checkpoint**: `flux1-dev-fp8.safetensors`
+- (If switching back to Flux) **CLIP**: `umt5_xxl_fp8_e4m3fn_scaled.safetensors`
 - **WAN Models**: WAN 2.2 text-to-video and image-to-video models
 - **MMAudio**: Audio generation models for video soundtracks
 

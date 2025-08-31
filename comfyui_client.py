@@ -17,6 +17,11 @@ WORKFLOW_MAPPINGS = {
         "height": ("5", "height"),
         "model": ("4", "ckpt_name")
     },
+    "image_qwen_image": {
+        "prompt": ("78", "value"),
+        "width": ("75", "value"),
+        "height": ("76", "value")
+    },
     "flux-dev-workflow": {
         "prompt": ("6", "text"),
         "width": ("27", "width"),
