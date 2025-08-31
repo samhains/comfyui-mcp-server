@@ -10,75 +10,100 @@ from urllib.parse import urlparse
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("ComfyUIClient")
 
-WORKFLOW_MAPPINGS = {
+# Single source of truth: per-workflow param mapping and output config
+WORKFLOW_SPECS = {
     "basic_api_test": {
-        "prompt": ("6", "text"),
-        "width": ("5", "width"),
-        "height": ("5", "height"),
-        "model": ("4", "ckpt_name")
+        "params": {"prompt": ("6", "text"), "width": ("5", "width"), "height": ("5", "height"), "model": ("4", "ckpt_name")},
+        "output": {"type": "image"}
     },
     "image_qwen_image": {
-        "prompt": ("78", "value"),
-        "width": ("75", "value"),
-        "height": ("76", "value")
+        "params": {"prompt": ("78", "value"), "width": ("75", "value"), "height": ("76", "value")},
+        "output": {"type": "image", "node_id": "60"}
     },
     "flux-dev-workflow": {
-        "prompt": ("6", "text"),
-        "width": ("27", "width"),
-        "height": ("27", "height"),
-        "model": ("30", "ckpt_name")
+        "params": {"prompt": ("6", "text"), "width": ("27", "width"), "height": ("27", "height"), "model": ("30", "ckpt_name")},
+        "output": {"type": "image"}
     },
     "wan-2.2-t2v-api": {
-        "prompt": ("6", "text"),
-        "width": ("59", "width"),
-        "height": ("59", "height")
+        "params": {"prompt": ("6", "text"), "width": ("59", "width"), "height": ("59", "height")},
+        "output": {"type": "video", "node_id": "125"}
     },
     "mmaudio-workflow": {
-        "prompt": ("6", "text"),
-        "audio_prompt": ("83:75", "prompt"),
-        "frame_length": ("59", "length"),
-        "width": ("59", "width"),
-        "height": ("59", "height")
+        "params": {"prompt": ("6", "text"), "audio_prompt": ("83:75", "prompt"), "frame_length": ("59", "length"), "width": ("59", "width"), "height": ("59", "height")},
+        "output": {"type": "video", "node_id": "125"}
     },
     "wan-2.2-t2v-hq": {
-        "prompt": ("141", "value"),
-        "audio_prompt": ("147", "value"),
-        "width": ("143", "value"),
-        "height": ("144", "value"),
-        "frame_length": ("145", "value")
+        "params": {"prompt": ("141", "value"), "audio_prompt": ("147", "value"), "width": ("143", "value"), "height": ("144", "value"), "frame_length": ("145", "value")},
+        "output": {"type": "video", "node_id": "125"}
     },
     "wan2.2-t2v-sd": {
-        "prompt": ("141", "value"),
-        "audio_prompt": ("147", "value"),
-        "width": ("143", "value"),
-        "height": ("144", "value"),
-        "frame_length": ("145", "value")
+        "params": {"prompt": ("141", "value"), "audio_prompt": ("147", "value"), "width": ("143", "value"), "height": ("144", "value"), "frame_length": ("145", "value")},
+        "output": {"type": "video", "node_id": "125"}
     },
     "flux-3-redux-wan2.2-i2v-sd": {
-        "image1_url": ("243", "url_or_path"),
-        "image2_url": ("248", "url_or_path"), 
-        "image3_url": ("249", "url_or_path"),
-        "width": ("143", "value"),
-        "height": ("144", "value"),
-        "frame_length": ("145", "value")
+        "params": {"image1_url": ("243", "url_or_path"), "image2_url": ("248", "url_or_path"), "image3_url": ("249", "url_or_path"), "width": ("143", "value"), "height": ("144", "value"), "frame_length": ("145", "value")},
+        "output": {"type": "video", "node_id": "125"}
     },
     "flux-2-redux": {
-        "image1_url": ("69", "url_or_path"),
-        "image2_url": ("70", "url_or_path"),
-        "width": ("62", "value"),
-        "height": ("65", "value")
+        "params": {"image1_url": ("69", "url_or_path"), "image2_url": ("70", "url_or_path"), "width": ("62", "value"), "height": ("65", "value")},
+        "output": {"type": "image", "node_id": "9"}
     },
     "wan2.2-f2f-loop": {
-        "image1_url": ("278", "url_or_path"),
-        "image2_url": ("280", "url_or_path"),
-        "width": ("143", "value"),
-        "height": ("144", "value"),
-        "frame_length": ("145", "value"),
-        "prompt": ("141", "value")
+        "params": {"image1_url": ("278", "url_or_path"), "image2_url": ("280", "url_or_path"), "width": ("143", "value"), "height": ("144", "value"), "frame_length": ("145", "value"), "prompt": ("141", "value")},
+        "output": {"type": "video", "node_id": "125"}
     }
 }
 
+# Backward-compatible alias expected by some code paths
+WORKFLOW_MAPPINGS = {wid: spec["params"] for wid, spec in WORKFLOW_SPECS.items()}
 DEFAULT_MAPPING = WORKFLOW_MAPPINGS["basic_api_test"]
+
+def _apply_params_to_workflow(workflow: dict, workflow_id: str, params: dict):
+    mapping = WORKFLOW_SPECS.get(workflow_id, {}).get("params", DEFAULT_MAPPING)
+    logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
+    for param_key, value in params.items():
+        if param_key in mapping:
+            node_id, input_key = mapping[param_key]
+            if node_id not in workflow:
+                raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
+            workflow[node_id]["inputs"][input_key] = value
+
+def _extract_output_url(base_url: str, outputs: dict, workflow_id: str):
+    spec = WORKFLOW_SPECS.get(workflow_id, {})
+    out_spec = spec.get("output", {})
+    node_id = out_spec.get("node_id")
+    output_type = out_spec.get("type", "image")
+
+    if node_id:
+        if node_id not in outputs:
+            raise Exception(f"Output node {node_id} not found in outputs: {outputs}")
+        node_out = outputs[node_id]
+        if output_type == "image" and "images" in node_out:
+            data = node_out["images"][0]
+        elif output_type == "video":
+            if "images" in node_out:
+                data = node_out["images"][0]
+            elif "gifs" in node_out:
+                data = node_out["gifs"][0]
+            elif "filenames" in node_out:
+                data = node_out["filenames"][0]
+            else:
+                raise Exception(f"No video output found in node {node_id}: {node_out}")
+        else:
+            key = next((k for k in ("images", "gifs", "filenames") if k in node_out), None)
+            if not key:
+                raise Exception(f"No recognizable outputs in node {node_id}: {node_out}")
+            data = node_out[key][0]
+    else:
+        # Fallback: first node with images
+        image_node = next((nid for nid, out in outputs.items() if "images" in out), None)
+        if not image_node:
+            raise Exception(f"No output node with images found: {outputs}")
+        data = outputs[image_node]["images"][0]
+
+    filename = data["filename"]
+    subfolder = data.get("subfolder", "")
+    return f"{base_url}/view?filename={filename}&subfolder={subfolder}&type=output"
 
 class ComfyUIClient:
     def __init__(self, base_url):
@@ -107,10 +132,6 @@ class ComfyUIClient:
             with open(workflow_file, "r") as f:
                 workflow = json.load(f)
 
-            # Get the appropriate mapping for this workflow
-            mapping = WORKFLOW_MAPPINGS.get(workflow_id, DEFAULT_MAPPING)
-            logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
-
             params = {"prompt": prompt, "width": width, "height": height}
             if model:
                 # Validate or correct model name
@@ -121,12 +142,7 @@ class ComfyUIClient:
                     raise Exception(f"Model '{model}' not in available models: {self.available_models}")
                 params["model"] = model
 
-            for param_key, value in params.items():
-                if param_key in mapping:
-                    node_id, input_key = mapping[param_key]
-                    if node_id not in workflow:
-                        raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
-                    workflow[node_id]["inputs"][input_key] = value
+            _apply_params_to_workflow(workflow, workflow_id, params)
 
             logger.info(f"Submitting workflow {workflow_id} to ComfyUI...")
             response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
@@ -141,11 +157,7 @@ class ComfyUIClient:
                 if history.get(prompt_id):
                     outputs = history[prompt_id]["outputs"]
                     logger.info("Workflow outputs: %s", json.dumps(outputs, indent=2))
-                    image_node = next((nid for nid, out in outputs.items() if "images" in out), None)
-                    if not image_node:
-                        raise Exception(f"No output node with images found: {outputs}")
-                    image_filename = outputs[image_node]["images"][0]["filename"]
-                    image_url = f"{self.base_url}/view?filename={image_filename}&subfolder=&type=output"
+                    image_url = _extract_output_url(self.base_url, outputs, workflow_id)
                     logger.info(f"Generated image URL: {image_url}")
                     return image_url
                 time.sleep(1)
@@ -183,10 +195,6 @@ class ComfyUIClient:
             with open(workflow_file, "r") as f:
                 workflow = json.load(f)
 
-            # Get the appropriate mapping for this workflow
-            mapping = WORKFLOW_MAPPINGS.get(workflow_id, DEFAULT_MAPPING)
-            logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
-
             # Prepare parameters with defaults
             params = {
                 "image1_url": image1_url,
@@ -196,15 +204,7 @@ class ComfyUIClient:
                 "frame_length": frame_length or 81,
                 "prompt": prompt or ""
             }
-
-            # Apply parameters to workflow nodes
-            for param_key, value in params.items():
-                if param_key in mapping:
-                    node_id, input_key = mapping[param_key]
-                    if node_id not in workflow:
-                        raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
-                    workflow[node_id]["inputs"][input_key] = value
-                    logger.info(f"Set {param_key} -> node {node_id}[{input_key}] = {value}")
+            _apply_params_to_workflow(workflow, workflow_id, params)
 
             # Submit workflow and wait for results
             response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
@@ -220,26 +220,7 @@ class ComfyUIClient:
                 if history.get(prompt_id):
                     outputs = history[prompt_id]["outputs"]
                     logger.info("Frame-to-frame video workflow outputs: %s", json.dumps(outputs, indent=2))
-                    
-                    # Use the configured output node from tools.json (node 125 = SAVE_VIDEO)
-                    output_node_id = "125"
-                    if output_node_id not in outputs:
-                        raise Exception(f"Output node {output_node_id} not found in outputs: {outputs}")
-                    
-                    # Video can be in "gifs", "filenames", or "images" array for VHS_VideoCombine nodes
-                    if "gifs" in outputs[output_node_id]:
-                        video_data = outputs[output_node_id]["gifs"][0]
-                    elif "filenames" in outputs[output_node_id]:
-                        video_data = outputs[output_node_id]["filenames"][0]
-                    elif "images" in outputs[output_node_id]:
-                        video_data = outputs[output_node_id]["images"][0]
-                    else:
-                        raise Exception(f"No video output found in node {output_node_id}: {outputs[output_node_id]}")
-                    
-                    video_filename = video_data["filename"]
-                    subfolder = video_data.get("subfolder", "")
-                    video_url = f"{self.base_url}/view?filename={video_filename}&subfolder={subfolder}&type=output"
-                    
+                    video_url = _extract_output_url(self.base_url, outputs, workflow_id)
                     logger.info(f"Generated frame-to-frame video URL: {video_url}")
                     return video_url
                     
@@ -309,10 +290,6 @@ class ComfyUIClient:
             with open(workflow_file, "r") as f:
                 workflow = json.load(f)
 
-            # Get the appropriate mapping for this workflow
-            mapping = WORKFLOW_MAPPINGS.get(workflow_id, DEFAULT_MAPPING)
-            logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
-
             # Prepare parameters with defaults - try passing URLs directly to LoadImage nodes
             params = {
                 "image1_url": image1_url,
@@ -320,18 +297,7 @@ class ComfyUIClient:
                 "width": width or 720,
                 "height": height or 720
             }
-
-            # Apply parameters to workflow nodes
-            for param_key, value in params.items():
-                if param_key in mapping:
-                    node_id, input_key = mapping[param_key]
-                    if node_id not in workflow:
-                        raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
-                    
-                    # Log before and after for debugging
-                    old_value = workflow[node_id]["inputs"].get(input_key, "NOT_SET")
-                    workflow[node_id]["inputs"][input_key] = value
-                    logger.info(f"Set {param_key} -> node {node_id}[{input_key}]: '{old_value}' -> '{value}'")
+            _apply_params_to_workflow(workflow, workflow_id, params)
 
             logger.info(f"Submitting remix image workflow {workflow_id} to ComfyUI...")
             response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
@@ -347,16 +313,7 @@ class ComfyUIClient:
                 if history.get(prompt_id):
                     outputs = history[prompt_id]["outputs"]
                     logger.info("Remix image workflow outputs: %s", json.dumps(outputs, indent=2))
-                    
-                    # Use the configured output node from tools.json (node 9 = SAVE_IMAGE)
-                    output_node_id = "9"
-                    if output_node_id not in outputs:
-                        raise Exception(f"Output node {output_node_id} not found in outputs: {outputs}")
-                    
-                    image_data = outputs[output_node_id]["images"][0]
-                    image_filename = image_data["filename"]
-                    subfolder = image_data.get("subfolder", "")
-                    image_url = f"{self.base_url}/view?filename={image_filename}&subfolder={subfolder}&type=output"
+                    image_url = _extract_output_url(self.base_url, outputs, workflow_id)
                     
                     logger.info(f"Generated remix image URL: {image_url}")
                     return image_url
@@ -383,10 +340,6 @@ class ComfyUIClient:
             with open(workflow_file, "r") as f:
                 workflow = json.load(f)
 
-            # Get the appropriate mapping for this workflow
-            mapping = WORKFLOW_MAPPINGS.get(workflow_id, DEFAULT_MAPPING)
-            logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
-
             # Prepare parameters - pass URLs directly to LoadImageFromUrlOrPath nodes
             params = {
                 "image1_url": image1_url,
@@ -402,14 +355,7 @@ class ComfyUIClient:
             if frame_length is not None:
                 params["frame_length"] = frame_length
 
-            # Apply parameters to workflow nodes
-            for param_key, value in params.items():
-                if param_key in mapping:
-                    node_id, input_key = mapping[param_key]
-                    if node_id not in workflow:
-                        raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
-                    workflow[node_id]["inputs"][input_key] = value
-                    logger.info(f"Set {param_key} -> node {node_id}[{input_key}]: '{value}'")
+            _apply_params_to_workflow(workflow, workflow_id, params)
 
             logger.info(f"Submitting 3-image video workflow {workflow_id} to ComfyUI...")
             response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
@@ -425,26 +371,7 @@ class ComfyUIClient:
                 if history.get(prompt_id):
                     outputs = history[prompt_id]["outputs"]
                     logger.info("3-image video workflow outputs: %s", json.dumps(outputs, indent=2))
-                    
-                    # Use hardcoded output node from tools.json (node 125 = SAVE_VIDEO)
-                    output_node_id = "125"
-                    if output_node_id not in outputs:
-                        raise Exception(f"Output node {output_node_id} not found in outputs: {outputs}")
-                    
-                    # Get video data from VHS_VideoCombine node (can be in different arrays)
-                    if "images" in outputs[output_node_id]:
-                        video_data = outputs[output_node_id]["images"][0]
-                    elif "gifs" in outputs[output_node_id]:
-                        video_data = outputs[output_node_id]["gifs"][0]
-                    elif "filenames" in outputs[output_node_id]:
-                        video_data = outputs[output_node_id]["filenames"][0]
-                    else:
-                        raise Exception(f"No video data found in output node {output_node_id}: {outputs[output_node_id]}")
-                    
-                    video_filename = video_data["filename"]
-                    subfolder = video_data.get("subfolder", "")
-                    video_url = f"{self.base_url}/view?filename={video_filename}&subfolder={subfolder}&type=output"
-                    
+                    video_url = _extract_output_url(self.base_url, outputs, workflow_id)
                     logger.info(f"Generated 3-image video URL: {video_url}")
                     return video_url
                     
@@ -483,9 +410,7 @@ class ComfyUIClient:
             with open(workflow_file, "r") as f:
                 workflow = json.load(f)
 
-            # Get the appropriate mapping for this workflow
-            mapping = WORKFLOW_MAPPINGS.get(workflow_id, DEFAULT_MAPPING)
-            logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
+            # Apply parameters per workflow spec
 
             # Prepare parameters with defaults
             params = {
@@ -497,14 +422,7 @@ class ComfyUIClient:
                 "prompt": prompt or ""
             }
 
-            # Apply parameters to workflow nodes
-            for param_key, value in params.items():
-                if param_key in mapping:
-                    node_id, input_key = mapping[param_key]
-                    if node_id not in workflow:
-                        raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
-                    workflow[node_id]["inputs"][input_key] = value
-                    logger.info(f"Set {param_key} -> node {node_id}[{input_key}] = {value}")
+            _apply_params_to_workflow(workflow, workflow_id, params)
 
             # Submit workflow and wait for results
             response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
@@ -520,25 +438,7 @@ class ComfyUIClient:
                 if history.get(prompt_id):
                     outputs = history[prompt_id]["outputs"]
                     logger.info("Frame-to-frame video workflow outputs: %s", json.dumps(outputs, indent=2))
-                    
-                    # Use the configured output node from tools.json (node 125 = SAVE_VIDEO)
-                    output_node_id = "125"
-                    if output_node_id not in outputs:
-                        raise Exception(f"Output node {output_node_id} not found in outputs: {outputs}")
-                    
-                    # Video can be in "gifs", "filenames", or "images" array for VHS_VideoCombine nodes
-                    if "gifs" in outputs[output_node_id]:
-                        video_data = outputs[output_node_id]["gifs"][0]
-                    elif "filenames" in outputs[output_node_id]:
-                        video_data = outputs[output_node_id]["filenames"][0]
-                    elif "images" in outputs[output_node_id]:
-                        video_data = outputs[output_node_id]["images"][0]
-                    else:
-                        raise Exception(f"No video output found in node {output_node_id}: {outputs[output_node_id]}")
-                    
-                    video_filename = video_data["filename"]
-                    subfolder = video_data.get("subfolder", "")
-                    video_url = f"{self.base_url}/view?filename={video_filename}&subfolder={subfolder}&type=output"
+                    video_url = _extract_output_url(self.base_url, outputs, workflow_id)
                     
                     logger.info(f"Generated frame-to-frame video URL: {video_url}")
                     return video_url
@@ -564,10 +464,6 @@ class ComfyUIClient:
             with open(workflow_file, "r") as f:
                 workflow = json.load(f)
 
-            # Get the appropriate mapping for this workflow
-            mapping = WORKFLOW_MAPPINGS.get(workflow_id, DEFAULT_MAPPING)
-            logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
-
             params = {"prompt": prompt}
             if width is not None:
                 params["width"] = width
@@ -577,13 +473,7 @@ class ComfyUIClient:
                 params["audio_prompt"] = audio_prompt
             if frame_length:
                 params["frame_length"] = frame_length
-
-            for param_key, value in params.items():
-                if param_key in mapping:
-                    node_id, input_key = mapping[param_key]
-                    if node_id not in workflow:
-                        raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
-                    workflow[node_id]["inputs"][input_key] = value
+            _apply_params_to_workflow(workflow, workflow_id, params)
             
             # Calculate dynamic audio duration for mmaudio workflow
             if workflow_id == "mmaudio-workflow":
@@ -618,31 +508,7 @@ class ComfyUIClient:
                 if history.get(prompt_id):
                     outputs = history[prompt_id]["outputs"]
                     logger.info("Video workflow outputs: %s", json.dumps(outputs, indent=2))
-                    # Look for video output node - check "images", "gifs", and "filenames" arrays
-                    video_node = None
-                    for node_id, output in outputs.items():
-                        if "images" in output and any(item["filename"].endswith(".mp4") for item in output["images"]):
-                            video_node = node_id
-                            break
-                        elif "gifs" in output and any(item["filename"].endswith(".mp4") for item in output["gifs"]):
-                            video_node = node_id
-                            break
-                        elif "filenames" in output and any(item["filename"].endswith(".mp4") for item in output["filenames"]):
-                            video_node = node_id
-                            break
-                    if not video_node:
-                        raise Exception(f"No output node with video found: {outputs}")
-                    
-                    # Video can be in "images", "gifs", or "filenames" array
-                    if "images" in outputs[video_node]:
-                        video_data = outputs[video_node]["images"][0]
-                    elif "gifs" in outputs[video_node]:
-                        video_data = outputs[video_node]["gifs"][0]
-                    else:
-                        video_data = outputs[video_node]["filenames"][0]
-                    video_filename = video_data["filename"]
-                    subfolder = video_data.get("subfolder", "")
-                    video_url = f"{self.base_url}/view?filename={video_filename}&subfolder={subfolder}&type=output"
+                    video_url = _extract_output_url(self.base_url, outputs, workflow_id)
                     logger.info(f"Generated video URL: {video_url}")
                     return video_url
                 time.sleep(1)
@@ -680,9 +546,7 @@ class ComfyUIClient:
             with open(workflow_file, "r") as f:
                 workflow = json.load(f)
 
-            # Get the appropriate mapping for this workflow
-            mapping = WORKFLOW_MAPPINGS.get(workflow_id, DEFAULT_MAPPING)
-            logger.info(f"Using mapping for workflow {workflow_id}: {mapping}")
+            # Apply parameters per workflow spec
 
             # Prepare parameters with defaults
             params = {
@@ -694,14 +558,7 @@ class ComfyUIClient:
                 "prompt": prompt or ""
             }
 
-            # Apply parameters to workflow nodes
-            for param_key, value in params.items():
-                if param_key in mapping:
-                    node_id, input_key = mapping[param_key]
-                    if node_id not in workflow:
-                        raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
-                    workflow[node_id]["inputs"][input_key] = value
-                    logger.info(f"Set {param_key} -> node {node_id}[{input_key}] = {value}")
+            _apply_params_to_workflow(workflow, workflow_id, params)
 
             # Submit workflow and wait for results
             response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
@@ -711,32 +568,13 @@ class ComfyUIClient:
             prompt_id = response.json()["prompt_id"]
             logger.info(f"Queued frame-to-frame video workflow with prompt_id: {prompt_id}")
 
-            # Wait for completion and get results using HARDCODED output node
+            # Wait for completion and get results
             while True:
                 history = requests.get(f"{self.base_url}/history/{prompt_id}").json()
                 if history.get(prompt_id):
                     outputs = history[prompt_id]["outputs"]
                     logger.info("Frame-to-frame video workflow outputs: %s", json.dumps(outputs, indent=2))
-                    
-                    # Use the configured output node from tools.json (node 125 = SAVE_VIDEO)
-                    output_node_id = "125"
-                    if output_node_id not in outputs:
-                        raise Exception(f"Output node {output_node_id} not found in outputs: {outputs}")
-                    
-                    # Video can be in "gifs", "filenames", or "images" array for VHS_VideoCombine nodes
-                    if "gifs" in outputs[output_node_id]:
-                        video_data = outputs[output_node_id]["gifs"][0]
-                    elif "filenames" in outputs[output_node_id]:
-                        video_data = outputs[output_node_id]["filenames"][0]
-                    elif "images" in outputs[output_node_id]:
-                        video_data = outputs[output_node_id]["images"][0]
-                    else:
-                        raise Exception(f"No video output found in node {output_node_id}: {outputs[output_node_id]}")
-                    
-                    video_filename = video_data["filename"]
-                    subfolder = video_data.get("subfolder", "")
-                    video_url = f"{self.base_url}/view?filename={video_filename}&subfolder={subfolder}&type=output"
-                    
+                    video_url = _extract_output_url(self.base_url, outputs, workflow_id)
                     logger.info(f"Generated frame-to-frame video URL: {video_url}")
                     return video_url
                     
