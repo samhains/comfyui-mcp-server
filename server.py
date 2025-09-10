@@ -215,6 +215,55 @@ def remix_image(params: dict) -> dict:
         logger.error(f"Error: {e}")
         return {"error": str(e)}
 
+# Define the image edit tool (Qwen Image Edit)
+@mcp.tool()
+def edit_image(params: dict) -> dict:
+    """Edit an image using Qwen Image Edit workflow through ComfyUI
+
+    Args:
+        params: Dictionary containing:
+            - image_url (required): URL to the source image
+            - prompt (required): Edit instruction text
+            - width (optional): Output image width in pixels
+            - height (optional): Output image height in pixels
+
+    Returns:
+        dict: Contains 'image_url' on success or 'error' on failure
+
+    Example params: {"image_url": "https://.../image.jpg", "prompt": "turn the sky green", "width": 1024, "height": 1024}
+    """
+    logger.info(f"Received image edit request with params: {params}")
+    try:
+        param_dict = params
+        
+        # Required parameters
+        image_url = param_dict["image_url"]
+        prompt = param_dict["prompt"]
+
+        # Optional parameters
+        width = param_dict.get("width")
+        height = param_dict.get("height")
+
+        # Use global comfyui_client
+        edited_image_url = comfyui_client.edit_image(
+            image_url=image_url,
+            prompt=prompt,
+            width=width,
+            height=height,
+        )
+
+        logger.info(f"Returning edited image URL: {edited_image_url}")
+        return {"image_url": edited_image_url}
+        
+    except KeyError as e:
+        missing_param = str(e).strip("'")
+        error_msg = f"Missing required parameter: {missing_param}"
+        logger.error(error_msg)
+        return {"error": error_msg}
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
 # Define the 3-image video generation tool
 @mcp.tool()
 def generate_3_image_video(params: dict) -> dict:
@@ -393,6 +442,17 @@ async def remix_image_http(params: dict):
     logger.info(f"Received HTTP remix image request with params: {params}")
     try:
         result = remix_image(params)
+        return result
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
+@app.post("/edit_image")
+async def edit_image_http(params: dict):
+    """HTTP endpoint for image edit generation"""
+    logger.info(f"Received HTTP image edit request with params: {params}")
+    try:
+        result = edit_image(params)
         return result
     except Exception as e:
         logger.error(f"Error: {e}")

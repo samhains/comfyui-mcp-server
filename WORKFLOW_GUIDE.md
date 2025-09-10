@@ -393,6 +393,52 @@ def your_tool_name(self, param1, param2=None):
         raise Exception(f"Error: {e}")
 ```
 
+
+## Example Mapping: Qwen Image Edit
+
+Use this when adding `workflows/image_qwen_image_edit.json`:
+
+- Parameters → node inputs:
+  - prompt → node `102`, input `value` (PrimitiveStringMultiline)
+  - image_url → node `103`, input `url_or_path` (LoadImageFromUrlOrPath)
+  - width → node `106`, input `value` (PrimitiveInt)
+  - height → node `107`, input `value` (PrimitiveInt)
+- Output node:
+  - node_id `60`, class `SaveImage` (title: SAVE_IMAGE), output_type `image`
+
+Add the tool in `tools.json`:
+```json
+{
+  "tools": {
+    "edit_image": {
+      "description": "Edits an image using Qwen Image Edit workflow through ComfyUI",
+      "workflow_id": "image_qwen_image_edit",
+      "parameters": {
+        "image_url": {"required": true, "type": "string"},
+        "prompt": {"required": true, "type": "string"},
+        "width": {"required": false, "type": "integer"},
+        "height": {"required": false, "type": "integer"}
+      }
+    }
+  }
+}
+```
+
+And add to `WORKFLOW_SPECS` in `comfyui_client.py`:
+```python
+"image_qwen_image_edit": {
+  "params": {
+    "prompt": ("102", "value"),
+    "image_url": ("103", "url_or_path"),
+    "width": ("106", "value"),
+    "height": ("107", "value")
+  },
+  "output": {"type": "image", "node_id": "60"}
+}
+```
+
+Expose an MCP tool `edit_image` in `server.py` that calls `comfyui_client.edit_image(...)`.
+
 ### FILE 4A: `server.py` - ADD MCP TOOL FUNCTION
 **Location**: Add before the FastAPI app creation:
 

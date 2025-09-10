@@ -22,6 +22,37 @@
         }
       }
     },
+    "edit_image": {
+      "description": "Edits an image using Qwen Image Edit workflow through ComfyUI",
+      "workflow_id": "image_qwen_image_edit",
+      "parameters": {
+        "image_url": {
+          "required": true,
+          "type": "string",
+          "description": "URL to the source image to edit. Must be a valid HTTP/HTTPS URL."
+        },
+        "prompt": {
+          "required": true,
+          "type": "string",
+          "description": "Edit instruction prompt (what to change in the image)."
+        },
+        "width": {
+          "required": false,
+          "type": "integer",
+          "description": "Output image width in pixels. Defaults to workflow value if not specified."
+        },
+        "height": {
+          "required": false,
+          "type": "integer",
+          "description": "Output image height in pixels. Defaults to workflow value if not specified."
+        }
+      },
+      "notes": [
+        "Uses LoadImageFromUrlOrPath to fetch the source image by URL",
+        "Maps prompt to TextEncodeQwenImageEdit node for instruction conditioning",
+        "Output is a single edited image from SaveImage node"
+      ]
+    },
     "generate_video": {
       "description": "Generates videos using WAN 2.2 T2V workflow through ComfyUI",
       "workflow_id": "wan2.2-t2v-sd",

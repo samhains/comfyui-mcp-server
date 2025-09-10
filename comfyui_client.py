@@ -20,6 +20,15 @@ WORKFLOW_SPECS = {
         "params": {"prompt": ("78", "value"), "width": ("75", "value"), "height": ("76", "value")},
         "output": {"type": "image", "node_id": "60"}
     },
+    "image_qwen_image_edit": {
+        "params": {
+            "prompt": ("102", "value"),
+            "image_url": ("103", "url_or_path"),
+            "width": ("106", "value"),
+            "height": ("107", "value")
+        },
+        "output": {"type": "image", "node_id": "60"}
+    },
     "flux-dev-workflow": {
         "params": {"prompt": ("6", "text"), "width": ("27", "width"), "height": ("27", "height"), "model": ("30", "ckpt_name")},
         "output": {"type": "image"}
@@ -456,4 +465,59 @@ class ComfyUIClient:
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
 
-    
+    def edit_image(self, image_url: str, prompt: str, width: int | None = None, height: int | None = None):
+        """Edit an image using the Qwen Image Edit workflow.
+
+        Parameters map to nodes:
+        - prompt -> node 102:value (PrimitiveStringMultiline)
+        - image_url -> node 103:url_or_path (LoadImageFromUrlOrPath)
+        - width -> node 106:value (PrimitiveInt)
+        - height -> node 107:value (PrimitiveInt)
+        Output node: 60 (SaveImage)
+        """
+        try:
+            workflow_id = "image_qwen_image_edit"
+
+            # Load workflow
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
+            with open(workflow_file, "r") as f:
+                workflow = json.load(f)
+
+            # Prepare parameters
+            params = {
+                "prompt": prompt,
+                "image_url": image_url,
+            }
+            if width is not None:
+                params["width"] = width
+            if height is not None:
+                params["height"] = height
+
+            _apply_params_to_workflow(workflow, workflow_id, params)
+
+            logger.info(f"Submitting image edit workflow {workflow_id} to ComfyUI...")
+            response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
+            if response.status_code != 200:
+                raise Exception(f"Failed to queue workflow: {response.status_code} - {response.text}")
+
+            prompt_id = response.json()["prompt_id"]
+            logger.info(f"Queued image edit workflow with prompt_id: {prompt_id}")
+
+            # Wait for completion and get results
+            while True:
+                history = requests.get(f"{self.base_url}/history/{prompt_id}").json()
+                if history.get(prompt_id):
+                    outputs = history[prompt_id]["outputs"]
+                    logger.info("Image edit workflow outputs: %s", json.dumps(outputs, indent=2))
+                    image_url = _extract_output_url(self.base_url, outputs, workflow_id)
+                    logger.info(f"Generated edited image URL: {image_url}")
+                    return image_url
+                time.sleep(1)
+
+        except FileNotFoundError:
+            raise Exception(f"Workflow file '{workflow_file}' not found")
+        except KeyError as e:
+            raise Exception(f"Workflow error - invalid node or input: {e}")
+        except requests.RequestException as e:
+            raise Exception(f"ComfyUI API error: {e}")
