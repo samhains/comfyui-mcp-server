@@ -264,7 +264,7 @@
       ],
       "steps": 50,
       "cfg": 4.5,
-      "seed": 855394697552323,
+      "seed": 407098243105840,
       "prompt": [
         "234",
         0
@@ -349,7 +349,7 @@
   },
   "143": {
     "inputs": {
-      "value": 1280
+      "value": 720
     },
     "class_type": "PrimitiveInt",
     "_meta": {
@@ -367,7 +367,7 @@
   },
   "145": {
     "inputs": {
-      "value": 180
+      "value": 150
     },
     "class_type": "PrimitiveInt",
     "_meta": {
@@ -452,7 +452,7 @@
   },
   "174": {
     "inputs": {
-      "seed": 1079955028680999
+      "seed": 969221369301557
     },
     "class_type": "Seed Everywhere",
     "_meta": {
@@ -469,7 +469,10 @@
         "144",
         0
       ],
-      "length": 81,
+      "length": [
+        "145",
+        0
+      ],
       "batch_size": 1,
       "positive": [
         "99",
@@ -495,8 +498,14 @@
   },
   "200": {
     "inputs": {
-      "width": 1280,
-      "height": 720,
+      "width": [
+        "143",
+        0
+      ],
+      "height": [
+        "144",
+        0
+      ],
       "batch_size": 1
     },
     "class_type": "EmptySD3LatentImage",
@@ -546,7 +555,7 @@
   },
   "204": {
     "inputs": {
-      "noise_seed": 643467875793462
+      "noise_seed": 1050618454038203
     },
     "class_type": "RandomNoise",
     "_meta": {
@@ -577,7 +586,7 @@
   },
   "206": {
     "inputs": {
-      "guidance": 3.5,
+      "guidance": 0,
       "conditioning": [
         "227",
         0
@@ -688,15 +697,6 @@
       "title": "BasicGuider"
     }
   },
-  "215": {
-    "inputs": {
-      "image": "Clipboard - 2024-08-16 21.21.38.png"
-    },
-    "class_type": "LoadImage",
-    "_meta": {
-      "title": "@IMAGE_2"
-    }
-  },
   "217": {
     "inputs": {
       "strength": 1,
@@ -764,7 +764,7 @@
   },
   "224": {
     "inputs": {
-      "image": "@ihatecigs (2).jpg"
+      "image": "Rabbits - David Lynch (6).jpg"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -786,15 +786,6 @@
     "class_type": "CLIPVisionEncode",
     "_meta": {
       "title": "CLIP Vision Encode"
-    }
-  },
-  "226": {
-    "inputs": {
-      "image": "Parker Ito and Dean Kissick - by Tom - Art of Conversation (3).jpg"
-    },
-    "class_type": "LoadImage",
-    "_meta": {
-      "title": "@IMAGE_1"
     }
   },
   "227": {
@@ -847,13 +838,13 @@
   },
   "230": {
     "inputs": {
-      "text": "Image a scene for this image. Do not describe image, but rather. Imagine how this image would change as a video. Describe for text and image to video for Wan 2.2. Print only prompt. Prefer JSON output. \n",
+      "text": "Image a scene for this image. Do not describe image, but rather. Imagine how this image would change as a video. Describe for text and image to video for Wan 2.2. Print only prompt.\n",
       "model": "Qwen2.5-VL-3B-Instruct",
       "quantization": "none",
       "keep_model_loaded": false,
       "temperature": 0.7,
       "max_new_tokens": 512,
-      "seed": 1004,
+      "seed": 249,
       "video_path": "",
       "image": [
         "212",
@@ -873,7 +864,7 @@
       "keep_model_loaded": false,
       "temperature": 0.7,
       "max_new_tokens": 512,
-      "seed": 488,
+      "seed": 1882,
       "video_path": "",
       "image": [
         "212",
@@ -887,7 +878,7 @@
   },
   "236": {
     "inputs": {
-      "text_0": "```json\n{\n  \"prompt\": \"As the video progresses, the tree begins to come to life, its branches swaying gently in the breeze. The eyes of the tree open wider, revealing a deep red glow that illuminates the surrounding landscape. The trunk starts to move, as if breathing, and the roots spread out, reaching towards the ground. The background transitions from a serene sunset to a mystical, otherworldly atmosphere with swirling clouds and glowing lights. The stone monument and bamboo sticks remain static throughout, serving as silent witnesses to the transformation.\"\n}\n```",
+      "text_0": "As the video progresses, the image of the person's face on the colorful circular object begins to blur and distort, creating a sense of disorientation and confusion. The colors around the face start to shift and blend into each other, giving the impression that the object is melting or dissolving. The hand holding the object becomes more visible, with fingers gripping it tightly, adding tension to the scene. The background gradually fades out, focusing entirely on the object and its transformation. The overall atmosphere shifts from curiosity to unease, as if something sinister is about to happen.",
       "text": [
         "230",
         0
@@ -900,7 +891,7 @@
   },
   "237": {
     "inputs": {
-      "text_0": "The audio environment in this scene is serene yet eerie. The background features a soft, gentle breeze rustling through the tree's leaves, creating a soothing sound. The distant mountains and sky evoke a sense of calm, with occasional whispers of wind carrying distant sounds. The stone structure and bamboo poles add to the ambiance with subtle, rhythmic movements. The overall atmosphere is one of quiet contemplation, with occasional distant animal calls or bird songs breaking the silence.",
+      "text_0": "The audio environment is filled with a soft, ambient hum that suggests a quiet indoor setting. The background noise is minimal, allowing the sharp, metallic sound of the scissors to stand out prominently. The sound of the scissors cutting through the paper creates a rhythmic, almost percussive effect, punctuated by the occasional crackle as the paper is torn. The overall atmosphere is one of focused concentration, with the sound of the scissors being the primary auditory element.",
       "text": [
         "234",
         0
@@ -909,15 +900,6 @@
     "class_type": "ShowText|pysssss",
     "_meta": {
       "title": "Show Text 🐍"
-    }
-  },
-  "241": {
-    "inputs": {
-      "image": "ComfyUI_00098_.png"
-    },
-    "class_type": "LoadImage",
-    "_meta": {
-      "title": "Load Image"
     }
   },
   "243": {
@@ -945,6 +927,24 @@
     "class_type": "LoadImageFromUrlOrPath",
     "_meta": {
       "title": "@IMAGE_3"
+    }
+  },
+  "255": {
+    "inputs": {
+      "image": "Rabbits - David Lynch.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "@IMAGE_1"
+    }
+  },
+  "256": {
+    "inputs": {
+      "image": "ChatGPT Image Apr 18, 2025, 08_39_47 PM.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "@IMAGE_2"
     }
   }
 }
