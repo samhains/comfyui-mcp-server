@@ -378,6 +378,56 @@ def generate_f2f_video(params: dict) -> dict:
         logger.error(f"Error: {e}")
         return {"error": str(e)}
 
+@mcp.tool()
+def generate_infinite_talk(params: dict) -> dict:
+    """Generate a talking-head video from image + audio using WAN 2.1 InfiniteTalk through ComfyUI
+
+    Args:
+        params: Dictionary containing:
+            - image_url (required): URL to the input image (portrait/headshot)
+            - audio_url (required): URL to the input audio file (speech)
+            - max_frames (optional): Max frames to generate. At 25fps, 250=10s. Defaults to 130.
+            - width (optional): Video width in pixels. Defaults to 640.
+            - height (optional): Video height in pixels. Defaults to 640.
+
+    Returns:
+        dict: Contains 'video_url' on success or 'error' on failure
+
+    Example params: {"image_url": "https://storage.example.com/portrait.png", "audio_url": "https://storage.example.com/speech.wav", "max_frames": 250, "width": 640, "height": 640}
+    """
+    logger.info(f"Received infinite talk request with params: {params}")
+    try:
+        param_dict = params
+
+        # Required parameters
+        image_url = param_dict["image_url"]
+        audio_url = param_dict["audio_url"]
+
+        # Optional parameters
+        max_frames = param_dict.get("max_frames")
+        width = param_dict.get("width")
+        height = param_dict.get("height")
+
+        video_url = comfyui_client.generate_infinite_talk(
+            image_url=image_url,
+            audio_url=audio_url,
+            max_frames=max_frames,
+            width=width,
+            height=height,
+        )
+
+        logger.info(f"Returning infinite talk video URL: {video_url}")
+        return {"video_url": video_url}
+
+    except KeyError as e:
+        missing_param = str(e).strip("'")
+        error_msg = f"Missing required parameter: {missing_param}"
+        logger.error(error_msg)
+        return {"error": error_msg}
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
 # Create FastAPI app for HTTP endpoints
 app = FastAPI(title="ComfyUI MCP Server")
 
@@ -475,6 +525,17 @@ async def generate_f2f_video_http(params: dict):
     logger.info(f"Received HTTP frame-to-frame video request with params: {params}")
     try:
         result = generate_f2f_video(params)
+        return result
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
+@app.post("/generate_infinite_talk")
+async def generate_infinite_talk_http(params: dict):
+    """HTTP endpoint for infinite talk video generation"""
+    logger.info(f"Received HTTP infinite talk request with params: {params}")
+    try:
+        result = generate_infinite_talk(params)
         return result
     except Exception as e:
         logger.error(f"Error: {e}")

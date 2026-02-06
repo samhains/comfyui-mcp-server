@@ -280,6 +280,45 @@
         }
       }
     }
+    },
+    "generate_infinite_talk": {
+      "description": "Generates a talking-head video from a static image and audio file using WAN 2.1 InfiniteTalk through ComfyUI. The audio drives lip sync and head motion on the input image.",
+      "workflow_id": "wan_2.1_infinite_talk",
+      "parameters": {
+        "image_url": {
+          "required": true,
+          "type": "string",
+          "description": "URL to the input image (portrait/headshot). Loaded via VHS_LoadImagePath."
+        },
+        "audio_url": {
+          "required": true,
+          "type": "string",
+          "description": "URL to the input audio file (speech). Loaded via VHS_LoadAudio. Audio drives lip sync timing."
+        },
+        "max_frames": {
+          "required": false,
+          "type": "integer",
+          "description": "Maximum number of frames to generate. At 25fps, 250 frames = 10 seconds. Should match or exceed audio duration. Defaults to 130."
+        },
+        "width": {
+          "required": false,
+          "type": "integer",
+          "description": "Video width in pixels. Defaults to 640."
+        },
+        "height": {
+          "required": false,
+          "type": "integer",
+          "description": "Video height in pixels. Defaults to 640."
+        }
+      },
+      "notes": [
+        "Uses WAN 2.1 InfiniteTalk model for audio-driven talking head generation",
+        "Audio is separated into vocals via AudioSeparation before wav2vec processing",
+        "max_frames controls how many frames of audio get lip sync embeddings - set high enough to cover full audio",
+        "Output is MP4 with the original audio muxed back in via VHS_VideoCombine",
+        "Image is auto-resized to width/height with center crop"
+      ]
+    }
   },
   "workflow_files": {
     "description": "Location of ComfyUI workflow JSON files",

@@ -60,6 +60,16 @@ WORKFLOW_SPECS = {
     "wan2.2-f2f-loop": {
         "params": {"image1_url": ("278", "url_or_path"), "image2_url": ("280", "url_or_path"), "width": ("143", "value"), "height": ("144", "value"), "frame_length": ("145", "value"), "prompt": ("141", "value")},
         "output": {"type": "video", "node_id": "125"}
+    },
+    "wan_2.1_infinite_talk": {
+        "params": {
+            "image_url": ("304", "image"),
+            "audio_url": ("303", "audio_file"),
+            "max_frames": ("270", "value"),
+            "width": ("245", "value"),
+            "height": ("246", "value")
+        },
+        "output": {"type": "video", "node_id": "302"}
     }
 }
 
@@ -521,3 +531,54 @@ class ComfyUIClient:
             raise Exception(f"Workflow error - invalid node or input: {e}")
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
+
+    def generate_infinite_talk(self, image_url, audio_url, max_frames=None, width=None, height=None):
+        """Generate a talking-head video from an image and audio using InfiniteTalk workflow.
+
+        Args:
+            image_url (str): URL to the input image file
+            audio_url (str): URL to the input audio file
+            max_frames (int, optional): Maximum number of frames. Defaults to 130.
+            width (int, optional): Video width in pixels. Defaults to 640.
+            height (int, optional): Video height in pixels. Defaults to 640.
+
+        Returns:
+            str: URL to the generated video file
+        """
+        try:
+            workflow_id = "wan_2.1_infinite_talk"
+
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
+            with open(workflow_file, "r") as f:
+                workflow = json.load(f)
+
+            params = {
+                "image_url": image_url,
+                "audio_url": audio_url,
+                "max_frames": max_frames or 130,
+                "width": width or 640,
+                "height": height or 640,
+            }
+            _apply_params_to_workflow(workflow, workflow_id, params)
+
+            logger.info(f"Submitting infinite talk workflow {workflow_id} to ComfyUI...")
+            response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
+            if response.status_code != 200:
+                raise Exception(f"Failed to queue workflow: {response.status_code} - {response.text}")
+
+            prompt_id = response.json()["prompt_id"]
+            logger.info(f"Queued infinite talk workflow with prompt_id: {prompt_id}")
+
+            while True:
+                history = requests.get(f"{self.base_url}/history/{prompt_id}").json()
+                if history.get(prompt_id):
+                    outputs = history[prompt_id]["outputs"]
+                    logger.info("Infinite talk workflow outputs: %s", json.dumps(outputs, indent=2))
+                    video_url = _extract_output_url(self.base_url, outputs, workflow_id)
+                    logger.info(f"Generated infinite talk video URL: {video_url}")
+                    return video_url
+                time.sleep(1)
+
+        except Exception as e:
+            raise Exception(f"Error generating infinite talk video: {e}")
