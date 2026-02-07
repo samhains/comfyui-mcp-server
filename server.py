@@ -325,6 +325,53 @@ def generate_3_image_video(params: dict) -> dict:
         return {"error": str(e)}
 
 @mcp.tool()
+def generate_i2v_video(params: dict) -> dict:
+    """Generate a video from a single input image using WAN 2.2 I2V through ComfyUI
+
+    Args:
+        params: Dictionary containing:
+            - image_url (required): URL to the input image to animate
+            - width (optional): Video width in pixels
+            - height (optional): Video height in pixels
+            - frame_length (optional): Number of frames for the video
+
+    Returns:
+        dict: Contains 'video_url' on success or 'error' on failure
+
+    Example params: {"image_url": "https://storage.supabase.co/bucket/image.jpg", "width": 720, "height": 720}
+    """
+    logger.info(f"Received i2v video request with params: {params}")
+    try:
+        param_dict = params
+
+        # Required parameters
+        image_url = param_dict["image_url"]
+
+        # Optional parameters
+        width = param_dict.get("width")
+        height = param_dict.get("height")
+        frame_length = param_dict.get("frame_length")
+
+        video_url = comfyui_client.generate_i2v_video(
+            image_url=image_url,
+            width=width,
+            height=height,
+            frame_length=frame_length
+        )
+
+        logger.info(f"Returning i2v video URL: {video_url}")
+        return {"video_url": video_url}
+
+    except KeyError as e:
+        missing_param = str(e).strip("'")
+        error_msg = f"Missing required parameter: {missing_param}"
+        logger.error(error_msg)
+        return {"error": error_msg}
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
+@mcp.tool()
 def generate_f2f_video(params: dict) -> dict:
     """Generate a video using frame-to-frame animation between 2 input images with WAN 2.2 I2V workflow through ComfyUI
     
@@ -514,6 +561,17 @@ async def generate_3_image_video_http(params: dict):
     logger.info(f"Received HTTP 3-image video request with params: {params}")
     try:
         result = generate_3_image_video(params)
+        return result
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
+@app.post("/generate_i2v_video")
+async def generate_i2v_video_http(params: dict):
+    """HTTP endpoint for image-to-video generation"""
+    logger.info(f"Received HTTP i2v video request with params: {params}")
+    try:
+        result = generate_i2v_video(params)
         return result
     except Exception as e:
         logger.error(f"Error: {e}")

@@ -53,6 +53,10 @@ WORKFLOW_SPECS = {
         "params": {"image1_url": ("243", "url_or_path"), "image2_url": ("248", "url_or_path"), "image3_url": ("249", "url_or_path"), "width": ("143", "value"), "height": ("144", "value"), "frame_length": ("145", "value")},
         "output": {"type": "video", "node_id": "125"}
     },
+    "wan2.2-i2v-sd": {
+        "params": {"image_url": ("243", "url_or_path"), "width": ("143", "value"), "height": ("144", "value"), "frame_length": ("145", "value")},
+        "output": {"type": "video", "node_id": "125"}
+    },
     "flux-2-redux": {
         "params": {"image1_url": ("69", "url_or_path"), "image2_url": ("70", "url_or_path"), "width": ("62", "value"), "height": ("65", "value")},
         "output": {"type": "image", "node_id": "9"}
@@ -403,7 +407,56 @@ class ComfyUIClient:
         except requests.RequestException as e:
             raise Exception(f"ComfyUI API error: {e}")
 
-    
+    def generate_i2v_video(self, image_url, width=None, height=None, frame_length=None):
+        """Generate video from a single input image using WAN 2.2 I2V workflow
+
+        Args:
+            image_url (str): URL to the input image
+            width (int, optional): Video width in pixels. Defaults to 720.
+            height (int, optional): Video height in pixels. Defaults to 720.
+            frame_length (int, optional): Number of frames. Defaults to 150.
+
+        Returns:
+            str: URL to the generated video file
+        """
+        try:
+            workflow_id = "wan2.2-i2v-sd"
+
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            workflow_file = os.path.join(script_dir, "workflows", f"{workflow_id}.json")
+            with open(workflow_file, "r") as f:
+                workflow = json.load(f)
+
+            params = {"image_url": image_url}
+            if width is not None:
+                params["width"] = width
+            if height is not None:
+                params["height"] = height
+            if frame_length is not None:
+                params["frame_length"] = frame_length
+
+            _apply_params_to_workflow(workflow, workflow_id, params)
+
+            logger.info(f"Submitting i2v video workflow {workflow_id} to ComfyUI...")
+            response = requests.post(f"{self.base_url}/prompt", json={"prompt": workflow})
+            if response.status_code != 200:
+                raise Exception(f"Failed to queue workflow: {response.status_code} - {response.text}")
+
+            prompt_id = response.json()["prompt_id"]
+            logger.info(f"Queued i2v video workflow with prompt_id: {prompt_id}")
+
+            while True:
+                history = requests.get(f"{self.base_url}/history/{prompt_id}").json()
+                if history.get(prompt_id):
+                    outputs = history[prompt_id]["outputs"]
+                    logger.info("I2V video workflow outputs: %s", json.dumps(outputs, indent=2))
+                    video_url = _extract_output_url(self.base_url, outputs, workflow_id)
+                    logger.info(f"Generated i2v video URL: {video_url}")
+                    return video_url
+                time.sleep(1)
+
+        except Exception as e:
+            raise Exception(f"Error generating i2v video: {e}")
 
     def generate_video(self, prompt, width=None, height=None, audio_prompt=None, frame_length=None, workflow_id=None):
         try:
