@@ -325,8 +325,58 @@ def generate_3_image_video(params: dict) -> dict:
         return {"error": str(e)}
 
 @mcp.tool()
-def generate_i2v_video(params: dict) -> dict:
-    """Generate a video from a single input image using WAN 2.2 I2V through ComfyUI
+def generate_i2v(params: dict) -> dict:
+    """Generate a video from a single image using WAN 2.2 dual-CFG distillation (fast, no audio). This is the default image-to-video tool. Use generate_i2v_maudio if you need audio.
+
+    Args:
+        params: Dictionary containing:
+            - image_url (required): URL to the input image to animate
+            - prompt (required): Motion/scene description for the video
+            - width (optional): Video width in pixels. Defaults to 640.
+            - height (optional): Video height in pixels. Defaults to 640.
+            - frame_length (optional): Number of frames. Defaults to 81.
+
+    Returns:
+        dict: Contains 'video_url' on success or 'error' on failure
+
+    Example params: {"image_url": "https://storage.example.com/image.jpg", "prompt": "camera slowly pans right as wind blows through hair"}
+    """
+    logger.info(f"Received i2v request with params: {params}")
+    try:
+        param_dict = params
+
+        # Required parameters
+        image_url = param_dict["image_url"]
+        prompt = param_dict["prompt"]
+
+        # Optional parameters
+        width = param_dict.get("width")
+        height = param_dict.get("height")
+        frame_length = param_dict.get("frame_length")
+
+        video_url = comfyui_client.generate_i2v(
+            image_url=image_url,
+            prompt=prompt,
+            width=width,
+            height=height,
+            frame_length=frame_length
+        )
+
+        logger.info(f"Returning i2v video URL: {video_url}")
+        return {"video_url": video_url}
+
+    except KeyError as e:
+        missing_param = str(e).strip("'")
+        error_msg = f"Missing required parameter: {missing_param}"
+        logger.error(error_msg)
+        return {"error": error_msg}
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
+@mcp.tool()
+def generate_i2v_maudio(params: dict) -> dict:
+    """Generate a video with audio from a single input image using WAN 2.2 I2V + MMAudio through ComfyUI. Slower but includes auto-generated audio. Use generate_i2v for faster video-only output.
 
     Args:
         params: Dictionary containing:
@@ -338,9 +388,9 @@ def generate_i2v_video(params: dict) -> dict:
     Returns:
         dict: Contains 'video_url' on success or 'error' on failure
 
-    Example params: {"image_url": "https://storage.supabase.co/bucket/image.jpg", "width": 720, "height": 720}
+    Example params: {"image_url": "https://storage.example.com/image.jpg", "width": 720, "height": 720}
     """
-    logger.info(f"Received i2v video request with params: {params}")
+    logger.info(f"Received i2v maudio request with params: {params}")
     try:
         param_dict = params
 
@@ -352,14 +402,14 @@ def generate_i2v_video(params: dict) -> dict:
         height = param_dict.get("height")
         frame_length = param_dict.get("frame_length")
 
-        video_url = comfyui_client.generate_i2v_video(
+        video_url = comfyui_client.generate_i2v_maudio(
             image_url=image_url,
             width=width,
             height=height,
             frame_length=frame_length
         )
 
-        logger.info(f"Returning i2v video URL: {video_url}")
+        logger.info(f"Returning i2v maudio video URL: {video_url}")
         return {"video_url": video_url}
 
     except KeyError as e:
@@ -566,12 +616,23 @@ async def generate_3_image_video_http(params: dict):
         logger.error(f"Error: {e}")
         return {"error": str(e)}
 
-@app.post("/generate_i2v_video")
-async def generate_i2v_video_http(params: dict):
-    """HTTP endpoint for image-to-video generation"""
-    logger.info(f"Received HTTP i2v video request with params: {params}")
+@app.post("/generate_i2v")
+async def generate_i2v_http(params: dict):
+    """HTTP endpoint for image-to-video generation (fast, no audio)"""
+    logger.info(f"Received HTTP i2v request with params: {params}")
     try:
-        result = generate_i2v_video(params)
+        result = generate_i2v(params)
+        return result
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        return {"error": str(e)}
+
+@app.post("/generate_i2v_maudio")
+async def generate_i2v_maudio_http(params: dict):
+    """HTTP endpoint for image-to-video generation with audio"""
+    logger.info(f"Received HTTP i2v maudio request with params: {params}")
+    try:
+        result = generate_i2v_maudio(params)
         return result
     except Exception as e:
         logger.error(f"Error: {e}")

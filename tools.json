@@ -196,8 +196,8 @@
         ]
       }
     },
-    "generate_i2v_video": {
-      "description": "Generates a video from a single input image URL using WAN 2.2 image-to-video through ComfyUI. Takes one image and animates it into a video with automatic motion and audio prompt generation via Qwen2.5VL and MMAudio.",
+    "generate_i2v_maudio": {
+      "description": "Generates a video with audio from a single input image URL using WAN 2.2 image-to-video through ComfyUI. Takes one image and animates it into a video with automatic motion and audio prompt generation via Qwen2.5VL and MMAudio. Use this when you need audio in the output.",
       "workflow_id": "wan2.2-i2v-sd",
       "parameters": {
         "image_url": {
@@ -312,7 +312,46 @@
           "factors": "Processing time depends on resolution, frame count, server load, and model complexity. WAN 2.2 + RIFE + MMAudio requires significant compute time. Expect longer times for high-resolution or complex scenes."
         }
       }
-    }
+    },
+    "generate_i2v": {
+      "description": "Generates video from a single image using WAN 2.2 image-to-video with dual-UNet CFG distillation. Fast 8-step generation, no audio. This is the default image-to-video tool. Use generate_i2v_maudio if you need audio in the output.",
+      "workflow_id": "wan2.2-i2v-dual-cfg",
+      "parameters": {
+        "image_url": {
+          "required": true,
+          "type": "string",
+          "description": "URL to the input image to animate. Loaded via LoadImageFromUrlOrPath."
+        },
+        "prompt": {
+          "required": true,
+          "type": "string",
+          "description": "Motion/scene description for the video generation."
+        },
+        "width": {
+          "required": false,
+          "type": "integer",
+          "description": "Video width in pixels. Defaults to 640."
+        },
+        "height": {
+          "required": false,
+          "type": "integer",
+          "description": "Video height in pixels. Defaults to 640."
+        },
+        "frame_length": {
+          "required": false,
+          "type": "integer",
+          "description": "Number of frames. Defaults to 81. Output is 2x via RIFE interpolation."
+        }
+      },
+      "notes": [
+        "Default image-to-video tool - fast generation without audio",
+        "Uses dual 14B UNet models: high-noise for initial steps, low-noise for refinement",
+        "8 total steps split evenly between the two models",
+        "lightx2v distill LoRA at 0.5 strength for fast generation",
+        "RIFE 2x frame interpolation, output at 32fps",
+        "No audio generation - video only. Use generate_i2v_maudio for audio",
+        "SageAttention enabled for memory efficiency"
+      ]
     },
     "generate_infinite_talk": {
       "description": "Generates a talking-head video from a static image and audio file using WAN 2.1 InfiniteTalk through ComfyUI. The audio drives lip sync and head motion on the input image.",
