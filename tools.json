@@ -1,415 +1,294 @@
 {
-  "description": "Tool definitions for ComfyUI MCP Server. Each tool defines how to interact with ComfyUI workflows.",
   "tools": {
     "generate_image": {
-      "description": "Generates images using Qwen-Image workflow through ComfyUI",
+      "description": "Generates images using Qwen-Image workflow through ComfyUI.",
       "workflow_id": "image_qwen_image",
+      "output": { "type": "image", "node_id": "60" },
       "parameters": {
         "prompt": {
-          "required": true,
-          "type": "string",
-          "description": "Text description of the image to generate"
+          "required": true, "type": "string",
+          "description": "Text description of the image to generate.",
+          "node_id": "78", "input_key": "value"
         },
         "width": {
-          "required": false,
-          "type": "integer",
-          "description": "Image width in pixels"
+          "required": false, "type": "integer",
+          "description": "Image width in pixels.",
+          "default": 1024,
+          "node_id": "75", "input_key": "value"
         },
         "height": {
-          "required": false,
-          "type": "integer", 
-          "description": "Image height in pixels"
+          "required": false, "type": "integer",
+          "description": "Image height in pixels.",
+          "default": 1024,
+          "node_id": "76", "input_key": "value"
         }
       }
     },
     "edit_image": {
-      "description": "Edits an image using Qwen Image Edit workflow through ComfyUI",
+      "description": "Edits an image using Qwen Image Edit workflow through ComfyUI.",
       "workflow_id": "image_qwen_image_edit",
+      "output": { "type": "image", "node_id": "60" },
       "parameters": {
         "image_url": {
-          "required": true,
-          "type": "string",
-          "description": "URL to the source image to edit. Must be a valid HTTP/HTTPS URL."
+          "required": true, "type": "string",
+          "description": "URL to the source image to edit.",
+          "node_id": "103", "input_key": "url_or_path"
         },
         "prompt": {
-          "required": true,
-          "type": "string",
-          "description": "Edit instruction prompt (what to change in the image)."
+          "required": true, "type": "string",
+          "description": "Edit instruction prompt (what to change in the image).",
+          "node_id": "102", "input_key": "value"
         },
         "width": {
-          "required": false,
-          "type": "integer",
-          "description": "Output image width in pixels. Defaults to workflow value if not specified."
+          "required": false, "type": "integer",
+          "description": "Output image width in pixels.",
+          "node_id": "106", "input_key": "value"
         },
         "height": {
-          "required": false,
-          "type": "integer",
-          "description": "Output image height in pixels. Defaults to workflow value if not specified."
+          "required": false, "type": "integer",
+          "description": "Output image height in pixels.",
+          "node_id": "107", "input_key": "value"
         }
-      },
-      "notes": [
-        "Uses LoadImageFromUrlOrPath to fetch the source image by URL",
-        "Maps prompt to TextEncodeQwenImageEdit node for instruction conditioning",
-        "Output is a single edited image from SaveImage node"
-      ]
-    },
-    "generate_video": {
-      "description": "Generates videos using WAN 2.2 T2V workflow through ComfyUI",
-      "workflow_id": "wan2.2-t2v-sd",
-      "parameters": {
-        "prompt": {
-          "required": true,
-          "type": "string",
-          "description": "Text description of the video content to generate"
-        },
-        "audio_prompt": {
-          "required": true,
-          "type": "string",
-          "description": "Text description of the audio/sound to generate for the video"
-        },
-        "frame_length": {
-          "required": false,
-          "type": "integer",
-          "description": "Number of frames for the video. Defaults to config value if not specified."
-        },
-        "width": {
-          "required": false,
-          "type": "integer",
-          "description": "Video width in pixels. Defaults to config value if not specified."
-        },
-        "height": {
-          "required": false,
-          "type": "integer",
-          "description": "Video height in pixels. Defaults to config value if not specified."
-        }
-      },
-      
-      "notes": [
-        "This workflow generates both video and audio using MMAudio",
-        "The audio prompt is embedded in the workflow itself",
-        "Video includes frame interpolation using RIFE",
-        "Output format is MP4 with embedded audio"
-      ]
-    },
-    "remix_image": {
-      "description": "Generates images using 2 input images with Flux Redux style conditioning through ComfyUI",
-      "workflow_id": "flux-2-redux",
-      "parameters": {
-        "image1_url": {
-          "required": true,
-          "type": "string",
-          "description": "URL to the first reference image for style conditioning. Must be a valid HTTP/HTTPS URL pointing to an image file (JPG, PNG, etc.)."
-        },
-        "image2_url": {
-          "required": true,
-          "type": "string",
-          "description": "URL to the second reference image for style conditioning. Must be a valid HTTP/HTTPS URL pointing to an image file (JPG, PNG, etc.)."
-        },
-        "width": {
-          "required": false,
-          "type": "integer",
-          "description": "Image width in pixels. Defaults to 720 if not specified."
-        },
-        "height": {
-          "required": false,
-          "type": "integer",
-          "description": "Image height in pixels. Defaults to 720 if not specified."
-        }
-      },
-      
-      "notes": [
-        "This workflow uses Flux Redux for style conditioning with 2 reference images",
-        "Images are downloaded from URLs and processed through CLIP Vision encoding",
-        "The workflow applies dual style conditioning before generating the final image",
-        "Output is a single image that blends styles from both input images"
-      ]
-    },
-    "generate_3_image_video": {
-      "description": "Generates videos using 3 input image URLs with Flux Redux and WAN 2.2 I2V workflow through ComfyUI. Passes 3 image URLs to LoadImageFromUrlOrPath nodes (@IMAGE_1, @IMAGE_2, @IMAGE_3) for style conditioning, then generates video with WAN 2.2 image-to-video and MMAudio for synchronized audio.",
-      "workflow_id": "flux-3-redux-wan2.2-i2v-sd",
-      "parameters": {
-        "image1_url": {
-          "required": true,
-          "type": "string",
-          "description": "URL to the first reference image. This image will be used as the primary style reference for Flux Redux conditioning. Must be a valid HTTP/HTTPS URL pointing to an image file (JPG, PNG, etc.)."
-        },
-        "image2_url": {
-          "required": true,
-          "type": "string", 
-          "description": "URL to the second reference image. This image will be used as additional style conditioning for Flux Redux. Must be a valid HTTP/HTTPS URL pointing to an image file (JPG, PNG, etc.)."
-        },
-        "image3_url": {
-          "required": true,
-          "type": "string",
-          "description": "URL to the third reference image. This image will be used as additional style conditioning for Flux Redux. Must be a valid HTTP/HTTPS URL pointing to an image file (JPG, PNG, etc.)."
-        },
-        "frame_length": {
-          "required": false,
-          "type": "integer",
-          "description": "Number of frames for the video. Defaults to workflow configuration (150 frames). Higher values create longer videos but take more time to process."
-        },
-        "width": {
-          "required": false,
-          "type": "integer",
-          "description": "Video width in pixels. Defaults to workflow configuration (1280px). Must be compatible with the model requirements."
-        },
-        "height": {
-          "required": false,
-          "type": "integer",
-          "description": "Video height in pixels. Defaults to workflow configuration (720px). Must be compatible with the model requirements."
-        }
-      },
-      
-      "notes": [
-        "This workflow combines Flux Redux (3-image style conditioning) + WAN 2.2 I2V + MMAudio",
-        "Uses LoadImageFromUrlOrPath nodes to load images directly from URLs (@IMAGE_1, @IMAGE_2, @IMAGE_3)",
-        "The workflow generates an intermediate styled image using Flux Redux, then converts to video", 
-        "Automatic prompt generation using Qwen2.5VL for motion and audio prompts",
-        "Video includes frame interpolation using RIFE for smooth motion",
-        "Output format is MP4 with embedded audio generated by MMAudio",
-        "Uses hardcoded output node 125 (SAVE_VIDEO) for reliable video output",
-        "Processing time depends on frame_length and resolution settings"
-      ],
-      "api_integration": {
-        "description": "Instructions for agents accessing this tool",
-        "image_requirements": {
-          "format": "URLs must point to valid image files (JPG, PNG, WebP, etc.)",
-          "accessibility": "URLs must be publicly accessible or include proper authentication headers",
-          "size": "Images will be automatically resized to fit workflow requirements",
-          "processing": "Images are downloaded temporarily during workflow execution"
-        },
-        "example_call": {
-          "image1_url": "https://your-storage.supabase.co/bucket/images/style1.jpg",
-          "image2_url": "https://your-storage.supabase.co/bucket/images/style2.jpg", 
-          "image3_url": "https://your-storage.supabase.co/bucket/images/style3.jpg",
-          "prompt": "A dynamic scene transitions from static to animated, with characters moving through a vibrant environment",
-          "audio_prompt": "Upbeat electronic music with ambient spatial effects and character movement sounds",
-          "frame_length": 120,
-          "width": 1280,
-          "height": 720
-        },
-        "error_handling": [
-          "Invalid URLs will return error before workflow execution",
-          "Inaccessible images will cause workflow failure",
-          "Large images may cause memory issues - consider resizing before upload",
-          "Network timeouts during download will abort the workflow"
-        ]
       }
     },
-    "generate_i2v_maudio": {
-      "description": "Generates a video with audio from a single input image URL using WAN 2.2 image-to-video through ComfyUI. Takes one image and animates it into a video with automatic motion and audio prompt generation via Qwen2.5VL and MMAudio. Use this when you need audio in the output.",
-      "workflow_id": "wan2.2-i2v-sd",
+    "generate_video": {
+      "description": "Generates videos with audio using WAN 2.2 T2V and MMAudio through ComfyUI.",
+      "workflow_id": "wan2.2-t2v-sd",
+      "output": { "type": "video", "node_id": "125" },
       "parameters": {
-        "image_url": {
-          "required": true,
-          "type": "string",
-          "description": "URL to the input image to animate into a video. Must be a valid HTTP/HTTPS URL pointing to an image file (JPG, PNG, WebP, etc.)."
+        "prompt": {
+          "required": true, "type": "string",
+          "description": "Text description of the video content to generate.",
+          "node_id": "141", "input_key": "value"
+        },
+        "audio_prompt": {
+          "required": true, "type": "string",
+          "description": "Text description of the audio/sound to generate for the video.",
+          "node_id": "147", "input_key": "value"
         },
         "width": {
-          "required": false,
-          "type": "integer",
-          "description": "Video width in pixels. Defaults to 720 if not specified."
+          "required": false, "type": "integer",
+          "description": "Video width in pixels.",
+          "default": 1280,
+          "node_id": "143", "input_key": "value"
         },
         "height": {
-          "required": false,
-          "type": "integer",
-          "description": "Video height in pixels. Defaults to 720 if not specified."
+          "required": false, "type": "integer",
+          "description": "Video height in pixels.",
+          "default": 720,
+          "node_id": "144", "input_key": "value"
         },
         "frame_length": {
-          "required": false,
-          "type": "integer",
-          "description": "Number of frames for the video. Defaults to 150. Higher values create longer videos."
+          "required": false, "type": "integer",
+          "description": "Number of frames for the video.",
+          "default": 81,
+          "node_id": "145", "input_key": "value"
         }
-      },
-      "notes": [
-        "Simple image-to-video: pass one image URL and get an animated video back",
-        "Motion prompt is auto-generated by Qwen2.5VL from the input image",
-        "Audio is auto-generated by MMAudio based on the visual content",
-        "Includes RIFE frame interpolation for smooth motion",
-        "Output format is MP4 with embedded audio at 32fps"
-      ]
+      }
     },
-    "generate_f2f_video": {
-      "description": "Generates videos using frame-to-frame animation between 2 input images with WAN 2.2 I2V workflow through ComfyUI. Creates smooth transitions between two images using advanced AI interpolation and automatic audio generation.",
-      "workflow_id": "wan2.2-f2f-loop",
+    "remix_image": {
+      "description": "Generates images using 2 input images with Flux Redux style conditioning through ComfyUI.",
+      "workflow_id": "flux-2-redux",
+      "output": { "type": "image", "node_id": "9" },
       "parameters": {
         "image1_url": {
-          "required": true,
-          "type": "string",
-          "description": "URL to the first/starting frame image. This image will be the beginning state of the animation. Must be a valid HTTP/HTTPS URL pointing to an image file (JPG, PNG, WebP, etc.)."
+          "required": true, "type": "string",
+          "description": "URL to the first reference image for style conditioning.",
+          "node_id": "69", "input_key": "url_or_path"
         },
         "image2_url": {
-          "required": true,
-          "type": "string",
-          "description": "URL to the second/ending frame image. This image will be the final state of the animation. Must be a valid HTTP/HTTPS URL pointing to an image file (JPG, PNG, WebP, etc.)."
+          "required": true, "type": "string",
+          "description": "URL to the second reference image for style conditioning.",
+          "node_id": "70", "input_key": "url_or_path"
         },
         "width": {
-          "required": false,
-          "type": "integer",
-          "description": "Video width in pixels. Defaults to 720 if not specified. Must be compatible with the model requirements. Recommended values: 720, 1280, 1920."
+          "required": false, "type": "integer",
+          "description": "Image width in pixels.",
+          "default": 720,
+          "node_id": "62", "input_key": "value"
         },
         "height": {
-          "required": false,
-          "type": "integer",
-          "description": "Video height in pixels. Defaults to 720 if not specified. Must be compatible with the model requirements. Recommended values: 720, 1080."
+          "required": false, "type": "integer",
+          "description": "Image height in pixels.",
+          "default": 720,
+          "node_id": "65", "input_key": "value"
+        }
+      }
+    },
+    "generate_3_image_video": {
+      "description": "Generates videos using 3 input images with Flux Redux style conditioning and WAN 2.2 I2V through ComfyUI. Includes auto-generated motion prompts and audio.",
+      "workflow_id": "flux-3-redux-wan2.2-i2v-sd",
+      "output": { "type": "video", "node_id": "125" },
+      "parameters": {
+        "image1_url": {
+          "required": true, "type": "string",
+          "description": "URL to the first reference image for style conditioning.",
+          "node_id": "243", "input_key": "url_or_path"
+        },
+        "image2_url": {
+          "required": true, "type": "string",
+          "description": "URL to the second reference image for style conditioning.",
+          "node_id": "248", "input_key": "url_or_path"
+        },
+        "image3_url": {
+          "required": true, "type": "string",
+          "description": "URL to the third reference image for style conditioning.",
+          "node_id": "249", "input_key": "url_or_path"
+        },
+        "width": {
+          "required": false, "type": "integer",
+          "description": "Video width in pixels.",
+          "node_id": "143", "input_key": "value"
+        },
+        "height": {
+          "required": false, "type": "integer",
+          "description": "Video height in pixels.",
+          "node_id": "144", "input_key": "value"
         },
         "frame_length": {
-          "required": false,
-          "type": "integer",
-          "description": "Number of frames for the video. Defaults to 81 frames (~2.5 seconds at 32fps). Higher values create longer videos but take more time to process. Typical range: 25-200 frames."
-        },
-        "prompt": {
-          "required": false,
-          "type": "string",
-          "description": "Custom motion prompt describing the desired animation between the two images. If empty, uses default behavior."
-        }
-      },
-      
-      "notes": [
-        "This workflow creates smooth frame-to-frame animation between two input images using WAN 2.2 I2V technology",
-        "Uses LoadImageFromUrlOrPath nodes to load images directly from URLs (@IMAGE_START, @IMAGE_END)",
-        "Generates audio prompts to match the visual content",
-        "Includes RIFE frame interpolation for ultra-smooth motion between frames",
-        "Output format is MP4 with embedded audio generated by MMAudio for immersive experience",
-        "Uses hardcoded output node 125 (SAVE_VIDEO) for reliable video output",
-        "Processing time scales with frame_length - expect 30s-5min depending on complexity and length"
-      ],
-      "api_integration": {
-        "description": "Instructions for agents accessing this tool",
-        "image_requirements": {
-          "format": "URLs must point to valid image files (JPG, PNG, WebP, GIF, etc.)",
-          "accessibility": "URLs must be publicly accessible or include proper authentication headers",
-          "size": "Images will be automatically resized to fit workflow requirements - no size limits",
-          "processing": "Images are downloaded directly by ComfyUI server using LoadImageFromUrlOrPath nodes - no local download required",
-          "content": "Works best with images that have clear visual differences for smooth animation"
-        },
-        "example_call": {
-          "image1_url": "https://storage.supabase.co/bucket/images/start_frame.jpg",
-          "image2_url": "https://storage.supabase.co/bucket/images/end_frame.jpg",
-          "width": 720,
-          "height": 720,
-          "frame_length": 81
-        },
-        "use_cases": [
-          "Transform one image into another with smooth animation",
-          "Create morphing effects between similar objects or scenes",
-          "Generate transition videos for presentations or social media",
-          "Animate static artwork or photographs",
-          "Create seamless loops by using similar start/end images"
-        ],
-        "error_handling": [
-          "Invalid URLs will return error during ComfyUI workflow execution",
-          "Inaccessible images will cause workflow failure when ComfyUI attempts to load them",
-          "Network timeouts during ComfyUI image fetching will abort the workflow",
-          "Incompatible image formats will be automatically converted by ComfyUI",
-          "Very large images may cause memory issues on ComfyUI server - automatic resizing applied",
-          "Frame length > 200 may cause timeout - consider shorter videos for testing"
-        ],
-        "performance_expectations": {
-          "short_videos": "25-50 frames: ~5-10 minutes processing",
-          "medium_videos": "51-100 frames: ~10-20 minutes processing",
-          "long_videos": "100+ frames: ~20-30 minutes processing",
-          "factors": "Processing time depends on resolution, frame count, server load, and model complexity. WAN 2.2 + RIFE + MMAudio requires significant compute time. Expect longer times for high-resolution or complex scenes."
+          "required": false, "type": "integer",
+          "description": "Number of frames for the video.",
+          "node_id": "145", "input_key": "value"
         }
       }
     },
     "generate_i2v": {
-      "description": "Generates video from a single image using WAN 2.2 image-to-video with dual-UNet CFG distillation. Fast 8-step generation, no audio. This is the default image-to-video tool. Use generate_i2v_maudio if you need audio in the output.",
+      "description": "Generates video from a single image using WAN 2.2 image-to-video with fast dual-CFG distillation. No audio. This is the default image-to-video tool. Use generate_i2v_maudio if you need audio.",
       "workflow_id": "wan2.2-i2v-dual-cfg",
+      "output": { "type": "video", "node_id": "125" },
       "parameters": {
         "image_url": {
-          "required": true,
-          "type": "string",
-          "description": "URL to the input image to animate. Loaded via LoadImageFromUrlOrPath."
+          "required": true, "type": "string",
+          "description": "URL to the input image to animate.",
+          "node_id": "203", "input_key": "url_or_path"
         },
         "prompt": {
-          "required": true,
-          "type": "string",
-          "description": "Motion/scene description for the video generation."
+          "required": true, "type": "string",
+          "description": "Motion/scene description for the video generation.",
+          "node_id": "141", "input_key": "value"
         },
         "width": {
-          "required": false,
-          "type": "integer",
-          "description": "Video width in pixels. Defaults to 640."
+          "required": false, "type": "integer",
+          "description": "Video width in pixels.",
+          "default": 640,
+          "node_id": "143", "input_key": "value"
         },
         "height": {
-          "required": false,
-          "type": "integer",
-          "description": "Video height in pixels. Defaults to 640."
+          "required": false, "type": "integer",
+          "description": "Video height in pixels.",
+          "default": 640,
+          "node_id": "144", "input_key": "value"
         },
         "frame_length": {
-          "required": false,
-          "type": "integer",
-          "description": "Number of frames. Defaults to 81. Output is 2x via RIFE interpolation."
+          "required": false, "type": "integer",
+          "description": "Number of frames. Output is 2x via RIFE interpolation.",
+          "default": 81,
+          "node_id": "145", "input_key": "value"
         }
-      },
-      "notes": [
-        "Default image-to-video tool - fast generation without audio",
-        "Uses dual 14B UNet models: high-noise for initial steps, low-noise for refinement",
-        "8 total steps split evenly between the two models",
-        "lightx2v distill LoRA at 0.5 strength for fast generation",
-        "RIFE 2x frame interpolation, output at 32fps",
-        "No audio generation - video only. Use generate_i2v_maudio for audio",
-        "SageAttention enabled for memory efficiency"
-      ]
+      }
     },
-    "generate_infinite_talk": {
-      "description": "Generates a talking-head video from a static image and audio file using WAN 2.1 InfiniteTalk through ComfyUI. The audio drives lip sync and head motion on the input image.",
-      "workflow_id": "wan_2.1_infinite_talk",
+    "generate_i2v_maudio": {
+      "description": "Generates a video with audio from a single image using WAN 2.2 I2V + MMAudio through ComfyUI. Slower but includes auto-generated motion prompts and audio. Use generate_i2v for faster video-only output.",
+      "workflow_id": "wan2.2-i2v-sd",
+      "output": { "type": "video", "node_id": "125" },
       "parameters": {
         "image_url": {
-          "required": true,
-          "type": "string",
-          "description": "URL to the input image (portrait/headshot). Loaded via VHS_LoadImagePath."
-        },
-        "audio_url": {
-          "required": true,
-          "type": "string",
-          "description": "URL to the input audio file (speech). Loaded via VHS_LoadAudio. Audio drives lip sync timing."
-        },
-        "max_frames": {
-          "required": false,
-          "type": "integer",
-          "description": "Maximum number of frames to generate. At 25fps, 250 frames = 10 seconds. Should match or exceed audio duration. Defaults to 130."
+          "required": true, "type": "string",
+          "description": "URL to the input image to animate.",
+          "node_id": "243", "input_key": "url_or_path"
         },
         "width": {
-          "required": false,
-          "type": "integer",
-          "description": "Video width in pixels. Defaults to 640."
+          "required": false, "type": "integer",
+          "description": "Video width in pixels.",
+          "node_id": "143", "input_key": "value"
         },
         "height": {
-          "required": false,
-          "type": "integer",
-          "description": "Video height in pixels. Defaults to 640."
+          "required": false, "type": "integer",
+          "description": "Video height in pixels.",
+          "node_id": "144", "input_key": "value"
+        },
+        "frame_length": {
+          "required": false, "type": "integer",
+          "description": "Number of frames for the video.",
+          "node_id": "145", "input_key": "value"
         }
-      },
-      "notes": [
-        "Uses WAN 2.1 InfiniteTalk model for audio-driven talking head generation",
-        "Audio is separated into vocals via AudioSeparation before wav2vec processing",
-        "max_frames controls how many frames of audio get lip sync embeddings - set high enough to cover full audio",
-        "Output is MP4 with the original audio muxed back in via VHS_VideoCombine",
-        "Image is auto-resized to width/height with center crop"
-      ]
+      }
+    },
+    "generate_f2f_video": {
+      "description": "Generates frame-to-frame animation between 2 input images using WAN 2.2 I2V with smooth RIFE interpolation and auto-generated audio.",
+      "workflow_id": "wan2.2-f2f-loop",
+      "output": { "type": "video", "node_id": "125" },
+      "parameters": {
+        "image1_url": {
+          "required": true, "type": "string",
+          "description": "URL to the first/starting frame image.",
+          "node_id": "278", "input_key": "url_or_path"
+        },
+        "image2_url": {
+          "required": true, "type": "string",
+          "description": "URL to the second/ending frame image.",
+          "node_id": "280", "input_key": "url_or_path"
+        },
+        "width": {
+          "required": false, "type": "integer",
+          "description": "Video width in pixels.",
+          "default": 720,
+          "node_id": "143", "input_key": "value"
+        },
+        "height": {
+          "required": false, "type": "integer",
+          "description": "Video height in pixels.",
+          "default": 720,
+          "node_id": "144", "input_key": "value"
+        },
+        "frame_length": {
+          "required": false, "type": "integer",
+          "description": "Number of frames for the video.",
+          "default": 81,
+          "node_id": "145", "input_key": "value"
+        },
+        "prompt": {
+          "required": false, "type": "string",
+          "description": "Custom motion prompt describing the desired animation.",
+          "default": "",
+          "node_id": "141", "input_key": "value"
+        }
+      }
+    },
+    "generate_infinite_talk": {
+      "description": "Generates a talking-head video from a static image and audio file using WAN 2.1 InfiniteTalk through ComfyUI. The audio drives lip sync and head motion.",
+      "workflow_id": "wan_2.1_infinite_talk",
+      "output": { "type": "video", "node_id": "302" },
+      "parameters": {
+        "image_url": {
+          "required": true, "type": "string",
+          "description": "URL to the input image (portrait/headshot).",
+          "node_id": "304", "input_key": "image"
+        },
+        "audio_url": {
+          "required": true, "type": "string",
+          "description": "URL to the input audio file (speech). Audio drives lip sync timing.",
+          "node_id": "303", "input_key": "audio_file"
+        },
+        "max_frames": {
+          "required": false, "type": "integer",
+          "description": "Maximum frames to generate. At 25fps, 250 frames = 10 seconds.",
+          "default": 130,
+          "node_id": "270", "input_key": "value"
+        },
+        "width": {
+          "required": false, "type": "integer",
+          "description": "Video width in pixels.",
+          "default": 640,
+          "node_id": "245", "input_key": "value"
+        },
+        "height": {
+          "required": false, "type": "integer",
+          "description": "Video height in pixels.",
+          "default": 640,
+          "node_id": "246", "input_key": "value"
+        }
+      }
     }
-  },
-  "workflow_files": {
-    "description": "Location of ComfyUI workflow JSON files",
-    "directory": "workflows/",
-    "naming_convention": "{workflow-name}.json",
-    "examples": {
-      "image_qwen_image": "workflows/image_qwen_image.json",
-      "flux-dev-workflow": "workflows/flux-dev-workflow.json",
-      "mmaudio-workflow": "workflows/mmaudio-workflow.json"
-    }
-  },
-  "adding_new_tools": {
-    "description": "Steps to add a new tool/workflow",
-    "steps": [
-      "1. Create workflow JSON file in workflows/ directory",
-      "2. Add tool definition to this file (tools.json)",
-      "3. Set the workflow_id to select the workflow",
-      "4. Add per-workflow mapping in comfyui_client.py (single source of truth)",
-      "5. Test the integration"
-    ]
   }
 }

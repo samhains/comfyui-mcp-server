@@ -7,22 +7,5 @@
     "image_generation": 300,
     "video_generation": 2000,
     "description": "Default timeout values in seconds for different operations. Can be overridden per request."
-  },
-  "resolutions": {
-    "image_generation": {
-      "width": 1024,
-      "height": 1024,
-      "description": "Default image resolution. Can be overridden per request."
-    },
-    "video_generation": {
-      "width": 1280,
-      "height": 720,
-      "description": "Default video resolution. Fixed for this workflow."
-    }
-  },
-  "video_generation": {
-    "default_frame_length": 81,
-    "workflow": "wan2.2-t2v-sd",
-    "description": "Default frame length and workflow for video generation. Can be overridden per request."
   }
 }
