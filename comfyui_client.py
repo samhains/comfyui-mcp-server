@@ -3,6 +3,7 @@ import json
 import time
 import logging
 import os
+import random
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("ComfyUIClient")
@@ -46,6 +47,23 @@ def _apply_params_to_workflow(workflow: dict, workflow_id: str, params: dict):
             if node_id not in workflow:
                 raise Exception(f"Node {node_id} not found in workflow {workflow_id}")
             workflow[node_id]["inputs"][input_key] = value
+
+
+SEED_KEYS = {"seed", "noise_seed"}
+RANDOMIZE_SEED_WORKFLOWS = {"flux-2-redux"}
+
+
+def _randomize_seeds(workflow: dict, workflow_id: str):
+    """Replace all seed/noise_seed values in the workflow with random ones."""
+    if workflow_id not in RANDOMIZE_SEED_WORKFLOWS:
+        return
+    for node_id, node in workflow.items():
+        inputs = node.get("inputs", {})
+        for key in SEED_KEYS:
+            if key in inputs and isinstance(inputs[key], (int, float)):
+                new_seed = random.randint(0, 2**53 - 1)
+                logger.info(f"Randomized {key} in node {node_id}: {inputs[key]} -> {new_seed}")
+                inputs[key] = new_seed
 
 
 def _extract_output_url(base_url: str, outputs: dict, workflow_id: str):
@@ -128,6 +146,7 @@ class ComfyUIClient:
             workflow = json.load(f)
 
         _apply_params_to_workflow(workflow, workflow_id, final_params)
+        _randomize_seeds(workflow, workflow_id)
 
         # Submit
         logger.info(f"Submitting {tool_name} workflow ({workflow_id}) to ComfyUI...")
