@@ -433,10 +433,9 @@
           "input_key": "value"
         },
         "lora_url": {
-          "required": false,
+          "required": true,
           "type": "string",
-          "description": "URL to a LoRA safetensors file to apply. Leave empty for base model only.",
-          "default": "",
+          "description": "URL to a LoRA safetensors file to apply. Required.",
           "node_id": "95",
           "input_key": "url"
         },
