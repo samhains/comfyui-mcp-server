@@ -3,292 +3,460 @@
     "generate_image": {
       "description": "Generates images using Qwen-Image workflow through ComfyUI.",
       "workflow_id": "image_qwen_image",
-      "output": { "type": "image", "node_id": "60" },
+      "output": {
+        "type": "image",
+        "node_id": "60"
+      },
       "parameters": {
         "prompt": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "Text description of the image to generate.",
-          "node_id": "78", "input_key": "value"
+          "node_id": "78",
+          "input_key": "value"
         },
         "width": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Image width in pixels.",
           "default": 1024,
-          "node_id": "75", "input_key": "value"
+          "node_id": "75",
+          "input_key": "value"
         },
         "height": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Image height in pixels.",
           "default": 1024,
-          "node_id": "76", "input_key": "value"
+          "node_id": "76",
+          "input_key": "value"
         }
       }
     },
     "edit_image": {
       "description": "Edits an image using Qwen Image Edit workflow through ComfyUI.",
       "workflow_id": "image_qwen_image_edit",
-      "output": { "type": "image", "node_id": "60" },
+      "output": {
+        "type": "image",
+        "node_id": "60"
+      },
       "parameters": {
         "image_url": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "URL to the source image to edit.",
-          "node_id": "103", "input_key": "url_or_path"
+          "node_id": "103",
+          "input_key": "url_or_path"
         },
         "prompt": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "Edit instruction prompt (what to change in the image).",
-          "node_id": "102", "input_key": "value"
+          "node_id": "102",
+          "input_key": "value"
         },
         "width": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Output image width in pixels.",
-          "node_id": "106", "input_key": "value"
+          "node_id": "106",
+          "input_key": "value"
         },
         "height": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Output image height in pixels.",
-          "node_id": "107", "input_key": "value"
+          "node_id": "107",
+          "input_key": "value"
         }
       }
     },
     "generate_video": {
       "description": "Generates videos with audio using WAN 2.2 T2V and MMAudio through ComfyUI.",
       "workflow_id": "wan2.2-t2v-sd",
-      "output": { "type": "video", "node_id": "125" },
+      "output": {
+        "type": "video",
+        "node_id": "125"
+      },
       "parameters": {
         "prompt": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "Text description of the video content to generate.",
-          "node_id": "141", "input_key": "value"
+          "node_id": "141",
+          "input_key": "value"
         },
         "audio_prompt": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "Text description of the audio/sound to generate for the video.",
-          "node_id": "147", "input_key": "value"
+          "node_id": "147",
+          "input_key": "value"
         },
         "width": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Video width in pixels.",
           "default": 1280,
-          "node_id": "143", "input_key": "value"
+          "node_id": "143",
+          "input_key": "value"
         },
         "height": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Video height in pixels.",
           "default": 720,
-          "node_id": "144", "input_key": "value"
+          "node_id": "144",
+          "input_key": "value"
         },
         "frame_length": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Number of frames for the video.",
           "default": 81,
-          "node_id": "145", "input_key": "value"
+          "node_id": "145",
+          "input_key": "value"
         }
       }
     },
     "remix_image": {
       "description": "Generates images using 2 input images with Flux Redux style conditioning through ComfyUI.",
       "workflow_id": "flux-2-redux",
-      "output": { "type": "image", "node_id": "9" },
+      "output": {
+        "type": "image",
+        "node_id": "9"
+      },
       "parameters": {
         "image1_url": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "URL to the first reference image for style conditioning.",
-          "node_id": "69", "input_key": "url_or_path"
+          "node_id": "69",
+          "input_key": "url_or_path"
         },
         "image2_url": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "URL to the second reference image for style conditioning.",
-          "node_id": "70", "input_key": "url_or_path"
+          "node_id": "70",
+          "input_key": "url_or_path"
         },
         "width": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Image width in pixels.",
           "default": 720,
-          "node_id": "62", "input_key": "value"
+          "node_id": "62",
+          "input_key": "value"
         },
         "height": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Image height in pixels.",
           "default": 720,
-          "node_id": "65", "input_key": "value"
+          "node_id": "65",
+          "input_key": "value"
         }
       }
     },
     "generate_3_image_video": {
       "description": "Generates videos using 3 input images with Flux Redux style conditioning and WAN 2.2 I2V through ComfyUI. Includes auto-generated motion prompts and audio.",
       "workflow_id": "flux-3-redux-wan2.2-i2v-sd",
-      "output": { "type": "video", "node_id": "125" },
+      "output": {
+        "type": "video",
+        "node_id": "125"
+      },
       "parameters": {
         "image1_url": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "URL to the first reference image for style conditioning.",
-          "node_id": "243", "input_key": "url_or_path"
+          "node_id": "243",
+          "input_key": "url_or_path"
         },
         "image2_url": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "URL to the second reference image for style conditioning.",
-          "node_id": "248", "input_key": "url_or_path"
+          "node_id": "248",
+          "input_key": "url_or_path"
         },
         "image3_url": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "URL to the third reference image for style conditioning.",
-          "node_id": "249", "input_key": "url_or_path"
+          "node_id": "249",
+          "input_key": "url_or_path"
         },
         "width": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Video width in pixels.",
-          "node_id": "143", "input_key": "value"
+          "node_id": "143",
+          "input_key": "value"
         },
         "height": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Video height in pixels.",
-          "node_id": "144", "input_key": "value"
+          "node_id": "144",
+          "input_key": "value"
         },
         "frame_length": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Number of frames for the video.",
-          "node_id": "145", "input_key": "value"
+          "node_id": "145",
+          "input_key": "value"
         }
       }
     },
     "generate_i2v": {
       "description": "Generates video from a single image using WAN 2.2 image-to-video with fast dual-CFG distillation. No audio. This is the default image-to-video tool. Use generate_i2v_maudio if you need audio.",
       "workflow_id": "wan2.2-i2v-dual-cfg",
-      "output": { "type": "video", "node_id": "125" },
+      "output": {
+        "type": "video",
+        "node_id": "125"
+      },
       "parameters": {
         "image_url": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "URL to the input image to animate.",
-          "node_id": "203", "input_key": "url_or_path"
+          "node_id": "203",
+          "input_key": "url_or_path"
         },
         "prompt": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "Motion/scene description for the video generation.",
-          "node_id": "141", "input_key": "value"
+          "node_id": "141",
+          "input_key": "value"
         },
         "width": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Video width in pixels.",
           "default": 640,
-          "node_id": "143", "input_key": "value"
+          "node_id": "143",
+          "input_key": "value"
         },
         "height": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Video height in pixels.",
           "default": 640,
-          "node_id": "144", "input_key": "value"
+          "node_id": "144",
+          "input_key": "value"
         },
         "frame_length": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Number of frames. Output is 2x via RIFE interpolation.",
           "default": 81,
-          "node_id": "145", "input_key": "value"
+          "node_id": "145",
+          "input_key": "value"
         }
       }
     },
     "generate_i2v_maudio": {
       "description": "Generates a video with audio from a single image using WAN 2.2 I2V + MMAudio through ComfyUI. Slower but includes auto-generated motion prompts and audio. Use generate_i2v for faster video-only output.",
       "workflow_id": "wan2.2-i2v-sd",
-      "output": { "type": "video", "node_id": "125" },
+      "output": {
+        "type": "video",
+        "node_id": "125"
+      },
       "parameters": {
         "image_url": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "URL to the input image to animate.",
-          "node_id": "243", "input_key": "url_or_path"
+          "node_id": "243",
+          "input_key": "url_or_path"
         },
         "width": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Video width in pixels.",
-          "node_id": "143", "input_key": "value"
+          "node_id": "143",
+          "input_key": "value"
         },
         "height": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Video height in pixels.",
-          "node_id": "144", "input_key": "value"
+          "node_id": "144",
+          "input_key": "value"
         },
         "frame_length": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Number of frames for the video.",
-          "node_id": "145", "input_key": "value"
+          "node_id": "145",
+          "input_key": "value"
         }
       }
     },
     "generate_f2f_video": {
       "description": "Generates frame-to-frame animation between 2 input images using WAN 2.2 I2V with smooth RIFE interpolation and auto-generated audio.",
       "workflow_id": "wan2.2-f2f-loop",
-      "output": { "type": "video", "node_id": "125" },
+      "output": {
+        "type": "video",
+        "node_id": "125"
+      },
       "parameters": {
         "image1_url": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "URL to the first/starting frame image.",
-          "node_id": "278", "input_key": "url_or_path"
+          "node_id": "278",
+          "input_key": "url_or_path"
         },
         "image2_url": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "URL to the second/ending frame image.",
-          "node_id": "280", "input_key": "url_or_path"
+          "node_id": "280",
+          "input_key": "url_or_path"
         },
         "width": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Video width in pixels.",
           "default": 720,
-          "node_id": "143", "input_key": "value"
+          "node_id": "143",
+          "input_key": "value"
         },
         "height": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Video height in pixels.",
           "default": 720,
-          "node_id": "144", "input_key": "value"
+          "node_id": "144",
+          "input_key": "value"
         },
         "frame_length": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Number of frames for the video.",
           "default": 81,
-          "node_id": "145", "input_key": "value"
+          "node_id": "145",
+          "input_key": "value"
         },
         "prompt": {
-          "required": false, "type": "string",
+          "required": false,
+          "type": "string",
           "description": "Custom motion prompt describing the desired animation.",
           "default": "",
-          "node_id": "141", "input_key": "value"
+          "node_id": "141",
+          "input_key": "value"
         }
       }
     },
     "generate_infinite_talk": {
       "description": "Generates a talking-head video from a static image and audio file using WAN 2.1 InfiniteTalk through ComfyUI. The audio drives lip sync and head motion.",
       "workflow_id": "wan_2.1_infinite_talk",
-      "output": { "type": "video", "node_id": "302" },
+      "output": {
+        "type": "video",
+        "node_id": "302"
+      },
       "parameters": {
         "image_url": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "URL to the input image (portrait/headshot).",
-          "node_id": "304", "input_key": "image"
+          "node_id": "304",
+          "input_key": "image"
         },
         "audio_url": {
-          "required": true, "type": "string",
+          "required": true,
+          "type": "string",
           "description": "URL to the input audio file (speech). Audio drives lip sync timing.",
-          "node_id": "303", "input_key": "audio_file"
+          "node_id": "303",
+          "input_key": "audio_file"
         },
         "max_frames": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Maximum frames to generate. At 25fps, 250 frames = 10 seconds.",
           "default": 130,
-          "node_id": "270", "input_key": "value"
+          "node_id": "270",
+          "input_key": "value"
         },
         "width": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Video width in pixels.",
           "default": 640,
-          "node_id": "245", "input_key": "value"
+          "node_id": "245",
+          "input_key": "value"
         },
         "height": {
-          "required": false, "type": "integer",
+          "required": false,
+          "type": "integer",
           "description": "Video height in pixels.",
           "default": 640,
-          "node_id": "246", "input_key": "value"
+          "node_id": "246",
+          "input_key": "value"
         }
       }
+    },
+    "generate_flux2_klein_image": {
+      "description": "Generates images using Flux 2 Klein 9B base model with optional LoRA from URL. Uses Flux2Scheduler, CFGGuider, and Qwen3 8B text encoder. Supports dynamic LoRA loading via URL.",
+      "workflow_id": "flux2-klein-9b-t2i",
+      "output": {
+        "type": "image",
+        "node_id": "9"
+      },
+      "parameters": {
+        "prompt": {
+          "required": true,
+          "type": "string",
+          "description": "Text description of the image to generate.",
+          "node_id": "76",
+          "input_key": "value"
+        },
+        "width": {
+          "required": false,
+          "type": "integer",
+          "description": "Image width in pixels. Defaults to 1024.",
+          "default": 1024,
+          "node_id": "86",
+          "input_key": "value"
+        },
+        "height": {
+          "required": false,
+          "type": "integer",
+          "description": "Image height in pixels. Defaults to 1024.",
+          "default": 1024,
+          "node_id": "87",
+          "input_key": "value"
+        },
+        "lora_url": {
+          "required": false,
+          "type": "string",
+          "description": "URL to a LoRA safetensors file to apply. Leave empty for base model only.",
+          "default": "",
+          "node_id": "95",
+          "input_key": "url"
+        },
+        "lora_strength": {
+          "required": false,
+          "type": "number",
+          "description": "LoRA strength (0.0-2.0). Defaults to 1.0.",
+          "default": 1.0,
+          "node_id": "97",
+          "input_key": "value"
+        }
+      },
+      "notes": [
+        "Uses Flux 2 Klein 9B base model (flux-2-klein-base-9b.safetensors)",
+        "Qwen3 8B fp8 text encoder (flux2 type)",
+        "Flux2-specific VAE (flux2-vae.safetensors) with 32-channel autoencoder",
+        "CFGGuider with cfg=5, euler sampler, 20 steps",
+        "Built-in psx_klein.safetensors LoRA always loaded",
+        "Additional LoRA can be loaded dynamically via URL"
+      ]
     }
   }
 }

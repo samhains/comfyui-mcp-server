@@ -1,0 +1,263 @@
+{
+  "9": {
+    "inputs": {
+      "filename_prefix": "Flux2-Klein",
+      "images": [
+        "83",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "76": {
+    "inputs": {
+      "value": "CGI-render 3D artwork of a cartoon rabbit character wearing a top hat and a tuxedo suit on his upper half, glasses, he has white fur and holding a pocket watch on a chain. Character standing in front of giant tree with a hollow, green grass at his feet. He is look at the watch with worried expression. Screenshot taken from old psx game."
+    },
+    "class_type": "PrimitiveStringMultiline",
+    "_meta": {
+      "title": "@PROMPT_STRING"
+    }
+  },
+  "80": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect",
+    "_meta": {
+      "title": "KSamplerSelect"
+    }
+  },
+  "81": {
+    "inputs": {
+      "steps": 20,
+      "width": [
+        "86",
+        0
+      ],
+      "height": [
+        "87",
+        0
+      ]
+    },
+    "class_type": "Flux2Scheduler",
+    "_meta": {
+      "title": "Flux2Scheduler"
+    }
+  },
+  "82": {
+    "inputs": {
+      "noise": [
+        "88",
+        0
+      ],
+      "guider": [
+        "93",
+        0
+      ],
+      "sampler": [
+        "80",
+        0
+      ],
+      "sigmas": [
+        "81",
+        0
+      ],
+      "latent_image": [
+        "84",
+        0
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced",
+    "_meta": {
+      "title": "SamplerCustomAdvanced"
+    }
+  },
+  "83": {
+    "inputs": {
+      "samples": [
+        "82",
+        0
+      ],
+      "vae": [
+        "89",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "84": {
+    "inputs": {
+      "width": [
+        "86",
+        0
+      ],
+      "height": [
+        "87",
+        0
+      ],
+      "batch_size": 1
+    },
+    "class_type": "EmptyFlux2LatentImage",
+    "_meta": {
+      "title": "Empty Flux 2 Latent"
+    }
+  },
+  "85": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "94",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Negative Prompt)"
+    }
+  },
+  "86": {
+    "inputs": {
+      "value": 1024
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "Width"
+    }
+  },
+  "87": {
+    "inputs": {
+      "value": 1024
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "Height"
+    }
+  },
+  "88": {
+    "inputs": {
+      "noise_seed": 919657060508443
+    },
+    "class_type": "RandomNoise",
+    "_meta": {
+      "title": "RandomNoise"
+    }
+  },
+  "89": {
+    "inputs": {
+      "vae_name": "flux2-vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "90": {
+    "inputs": {
+      "text": [
+        "76",
+        0
+      ],
+      "clip": [
+        "94",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)"
+    }
+  },
+  "91": {
+    "inputs": {
+      "unet_name": "flux-2-klein-base-9b.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "92": {
+    "inputs": {
+      "clip_name": "qwen_3_8b_fp8mixed.safetensors",
+      "type": "flux2",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "93": {
+    "inputs": {
+      "cfg": 5,
+      "model": [
+        "95",
+        0
+      ],
+      "positive": [
+        "90",
+        0
+      ],
+      "negative": [
+        "85",
+        0
+      ]
+    },
+    "class_type": "CFGGuider",
+    "_meta": {
+      "title": "CFGGuider"
+    }
+  },
+  "94": {
+    "inputs": {
+      "lora_name": "psx_klein.safetensors",
+      "strength_model": 1,
+      "strength_clip": 1,
+      "model": [
+        "91",
+        0
+      ],
+      "clip": [
+        "92",
+        0
+      ]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Load LoRA (Model and CLIP)"
+    }
+  },
+  "95": {
+    "inputs": {
+      "url": "",
+      "strength": [
+        "97",
+        0
+      ],
+      "model": [
+        "91",
+        0
+      ]
+    },
+    "class_type": "Load LoRA From URL",
+    "_meta": {
+      "title": "@LORA_URL"
+    }
+  },
+  "97": {
+    "inputs": {
+      "value": 1
+    },
+    "class_type": "Float",
+    "_meta": {
+      "title": "@STRENGTH_INT"
+    }
+  }
+}
