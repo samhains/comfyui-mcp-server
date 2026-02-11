@@ -14,7 +14,7 @@
   },
   "76": {
     "inputs": {
-      "value": "CGI-render 3D artwork of a cartoon rabbit character wearing a top hat and a tuxedo suit on his upper half, glasses, he has white fur and holding a pocket watch on a chain. Character standing in front of giant tree with a hollow, green grass at his feet. He is look at the watch with worried expression. Screenshot taken from old psx game."
+      "value": "CGI-render 3D artwork from a game. The character has a light complexion and straight, shoulder-length, platinum blonde hair with a blunt fringe. She wears strapless top with puffy, off-the-shoulder sleeves in a metallic silver color. The lower part of her outfit consist of plaid miniskirt with stockings and garter under it. Setting is inside of caste featuring stained glass window with angels on it, candles and big stone arc."
     },
     "class_type": "PrimitiveStringMultiline",
     "_meta": {
@@ -141,7 +141,7 @@
   },
   "88": {
     "inputs": {
-      "noise_seed": 919657060508443
+      "noise_seed": 4873668206981
     },
     "class_type": "RandomNoise",
     "_meta": {
@@ -217,7 +217,7 @@
   },
   "95": {
     "inputs": {
-      "url": "",
+      "url": "https://idyoveanwiuwcvgxijtz.supabase.co/storage/v1/object/public/ai-creative-studio-shelf/loras/flux2_klein_9b/psx_klein/psx_klein.safetensors",
       "strength": [
         "97",
         0
