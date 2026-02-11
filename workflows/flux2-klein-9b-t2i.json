@@ -112,8 +112,8 @@
     "inputs": {
       "text": "",
       "clip": [
-        "94",
-        1
+        "92",
+        0
       ]
     },
     "class_type": "CLIPTextEncode",
@@ -164,8 +164,8 @@
         0
       ],
       "clip": [
-        "94",
-        1
+        "92",
+        0
       ]
     },
     "class_type": "CLIPTextEncode",
@@ -213,25 +213,6 @@
     "class_type": "CFGGuider",
     "_meta": {
       "title": "CFGGuider"
-    }
-  },
-  "94": {
-    "inputs": {
-      "lora_name": "psx_klein.safetensors",
-      "strength_model": 1,
-      "strength_clip": 1,
-      "model": [
-        "91",
-        0
-      ],
-      "clip": [
-        "92",
-        0
-      ]
-    },
-    "class_type": "LoraLoader",
-    "_meta": {
-      "title": "Load LoRA (Model and CLIP)"
     }
   },
   "95": {
