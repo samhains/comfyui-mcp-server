@@ -456,6 +456,65 @@
         "Built-in psx_klein.safetensors LoRA always loaded",
         "Additional LoRA can be loaded dynamically via URL"
       ]
+    },
+    "generate_flux2_klein_i2i": {
+      "description": "Flux 2 Klein 9B image-to-image generation with LoRA from URL. Takes a source image and transforms it with a prompt and LoRA style.",
+      "workflow_id": "flux2-klein-9b-i2i",
+      "parameters": {
+        "prompt": {
+          "type": "string",
+          "description": "Text prompt describing the desired output",
+          "required": true,
+          "node_id": "76",
+          "input_key": "value"
+        },
+        "image_url": {
+          "type": "string",
+          "description": "URL or path to the source image",
+          "required": true,
+          "node_id": "109",
+          "input_key": "url_or_path"
+        },
+        "lora_url": {
+          "type": "string",
+          "description": "URL to a LoRA safetensors file to apply. Required.",
+          "required": true,
+          "node_id": "95",
+          "input_key": "url"
+        },
+        "width": {
+          "type": "integer",
+          "description": "Output width in pixels",
+          "default": 1024,
+          "node_id": "111",
+          "input_key": "value"
+        },
+        "height": {
+          "type": "integer",
+          "description": "Output height in pixels",
+          "default": 1024,
+          "node_id": "112",
+          "input_key": "value"
+        },
+        "denoise": {
+          "type": "float",
+          "description": "Denoise strength (0.0 = no change, 1.0 = full generation)",
+          "default": 0.8,
+          "node_id": "108",
+          "input_key": "denoise"
+        },
+        "lora_strength": {
+          "type": "float",
+          "description": "LoRA strength",
+          "default": 1.0,
+          "node_id": "97",
+          "input_key": "value"
+        }
+      },
+      "output": {
+        "type": "image",
+        "node_id": "9"
+      }
     }
   }
 }
