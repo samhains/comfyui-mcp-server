@@ -483,29 +483,33 @@
           "input_key": "url"
         },
         "width": {
+          "required": false,
           "type": "integer",
-          "description": "Output width in pixels",
+          "description": "Output width in pixels.",
           "default": 1024,
           "node_id": "111",
           "input_key": "value"
         },
         "height": {
+          "required": false,
           "type": "integer",
-          "description": "Output height in pixels",
+          "description": "Output height in pixels.",
           "default": 1024,
           "node_id": "112",
           "input_key": "value"
         },
         "denoise": {
-          "type": "float",
-          "description": "Denoise strength (0.0 = no change, 1.0 = full generation)",
+          "required": false,
+          "type": "number",
+          "description": "Denoise strength (0.0 = no change, 1.0 = full generation).",
           "default": 0.8,
           "node_id": "108",
           "input_key": "denoise"
         },
         "lora_strength": {
-          "type": "float",
-          "description": "LoRA strength",
+          "required": false,
+          "type": "number",
+          "description": "LoRA strength (0.0-2.0).",
           "default": 1.0,
           "node_id": "97",
           "input_key": "value"

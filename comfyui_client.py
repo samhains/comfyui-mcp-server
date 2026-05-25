@@ -50,7 +50,7 @@ def _apply_params_to_workflow(workflow: dict, workflow_id: str, params: dict):
 
 
 SEED_KEYS = {"seed", "noise_seed"}
-RANDOMIZE_SEED_WORKFLOWS = {"flux-2-redux"}
+RANDOMIZE_SEED_WORKFLOWS = {"flux-2-redux", "flux2-klein-9b-t2i", "flux2-klein-9b-i2i"}
 
 
 def _randomize_seeds(workflow: dict, workflow_id: str):
@@ -161,7 +161,21 @@ class ComfyUIClient:
         while True:
             history = requests.get(f"{self.base_url}/history/{prompt_id}").json()
             if history.get(prompt_id):
-                outputs = history[prompt_id]["outputs"]
+                entry = history[prompt_id]
+                # Check for execution errors (e.g. OOM, missing models)
+                status_info = entry.get("status", {})
+                if status_info.get("status_str") == "error":
+                    node_err_detail = entry.get("node_errors", {})
+                    err_msgs = []
+                    for nid, nerr in node_err_detail.items():
+                        exc_msg = nerr.get("exception_message", "")
+                        class_type = nerr.get("class_type", f"node {nid}")
+                        if exc_msg:
+                            err_msgs.append(f"{class_type}: {exc_msg}")
+                    if err_msgs:
+                        raise Exception(f"ComfyUI execution failed: {'; '.join(err_msgs)}")
+                    raise Exception(f"ComfyUI execution failed: {json.dumps(status_info)}")
+                outputs = entry["outputs"]
                 logger.info(f"{tool_name} outputs: %s", json.dumps(outputs, indent=2))
                 result_url = _extract_output_url(self.base_url, outputs, workflow_id)
                 logger.info(f"{tool_name} result URL: {result_url}")
