@@ -1,5 +1,7 @@
 .mcp.json
-.DS_STORE
+.DS_Store
 workflows/.DS_Store
-__pycache__/comfyui_client.cpython-313.pyc
-/__pycache__
+__pycache__/
+*.pyc
+.env
+.claude/
